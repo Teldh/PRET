@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;padding:15px;margin-bottom:3rem">
+
+    <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+    <div style="float:right;">
+        <a href="/download_method_results/{{ file['bid'] }},{{ file['cap'] }},{{ file['metodo']}}" >
+            <button class="btn btn-primary">Download results</button>
+        </a>
+    </div>
+    <h2>Relations:</h2>
+    <br>
+
+    <div id="loading"></div>
+
+    <div class="form-row">
+        <div class="form-group col-2">
+
+            <input type="text" class="form-control" id="prereq" placeholder="Prerequisite">
+        </div>
+        <div class="form-group col-2">
+
+            <input type="text" class="form-control" id="target" placeholder="Target">
+        </div>
+
+        {% if file['metodo'] != 1 and  file['metodo'] != 2 %}
+            <div class="form-group col-2">
+
+                <select id="op" class="form-control">
+                    <option selected>greater</option>
+                    <option>lower</option>
+                    <option>equals</option>
+              </select>
+            </div>
+            <div class="form-group col-1">
+
+                <input type="number" step=".01" class="form-control" id="value" placeholder="Value">
+            </div>
+        {% endif %}
+        {% if file['metodo'] == 1 or file['metodo']== 2 or file['metodo']== 4 %}
+            <button class="btn btn-primary form-group col-1" onclick="filtraBinario()">Filter</button>
+        {% else %}
+            <button class="btn btn-primary form-group col-1" onclick="filtra()">Filter</button>
+        {% endif %}
+  </div>
+
+
+
+
+
+    <table class="table table-bordered" id="table">
+        <tr>
+            <th>Prerequisite</th>
+            <th>Target</th>
+
+        {% if file['metodo'] == 3 %}
+            <th> RefD</th>
+        {% elif file['metodo'] == 5 %}
+            <th> Toc Distance</th>
+        {% elif file['metodo'] == 6 %}
+            <th> Weight </th>
+        {% endif %}
+        </tr>
+
+        {% for rel in file['relations'] %}
+        <tr>
+            <td>{{ rel.lemma2 }}</td>
+            <td>{{ rel.lemma1 }}</td>
+        {% if file['metodo'] == 3 %}
+            <td> {{ rel.m3 }}</td>
+        {% elif file['metodo'] == 5 %}
+            <td> {{ rel.m5 }}</td>
+        {% elif file['metodo'] == 6 %}
+            <td> {{ rel.m6 }}</td>
+        {% endif %}
+
+        </tr>
+        {% endfor %}
+    </table>
+    
+</div>
+<script type="text/javascript">
+
+    var table = document.getElementById("table");
+    var tr = table.getElementsByTagName("tr");
+
+    function filtra() {
+        var prereq = document.getElementById("prereq");
+        var target = document.getElementById("target");
+        var op = document.getElementById("op");
+
+        var value = parseFloat(document.getElementById("value").value);
+        console.log(value);
+
+        for (var i = 1; i < table.rows.length; i++) {
+            var prereq_row = tr[i].cells[0].innerHTML;
+            var target_row = tr[i].cells[1].innerHTML;
+            var value_row = parseFloat(tr[i].cells[2].innerHTML);
+
+
+
+            if( (prereq.value != "" && prereq_row != prereq.value)
+                || ( target.value != "" && target_row != target.value)
+                || (value != NaN && ((op.value == "lower" && value_row > value) || (op.value =="greater" && value_row <= value) || (op .value == "equals" && value_row != value))))
+                tr[i].style.display = "none";
+            else
+                tr[i].style.display = "";
+        }
+    }
+
+    function filtraBinario() {
+
+        var prereq = document.getElementById("prereq");
+        var target = document.getElementById("target");
+
+        for (var i = 1; i < table.rows.length; i++) {
+            var prereq_row = tr[i].cells[0].innerHTML;
+            var target_row = tr[i].cells[1].innerHTML;
+
+            if( (prereq.value != "" && prereq_row != prereq.value) || ( target.value != "" && target_row != target.value))
+                tr[i].style.display = "none";
+            else
+                tr[i].style.display = "";
+        }
+    }
+</script>
+{% endblock %}
+

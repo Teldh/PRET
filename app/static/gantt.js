@@ -1,13 +1,14 @@
 /**
- * @author Modified from Dimitry Kudrayvtsev and Keyvan Fatehi
+ * @author Modified and adapted for PRET from Dimitry Kudrayvtsev and Keyvan Fatehi
  *
  */
 
-var idToNode = {};
 //var nodeList = [];
-var edgeList = [];
+
 var clickedConcept = "";
 var selectedBurstPair = [];
+var currStartSent = null;
+var currendSent = null;
 
 $(document).on('dblclick', function(e) {
     //show prerequisite relations if a concept is clicked
@@ -19,6 +20,7 @@ $(document).on('dblclick', function(e) {
         }
     }
 });
+console.log($json);
 
 $("#modalShowRelations").on('show.bs.modal', function(e) {
     $("#table_burstSummary").find("tr:not(:first)").remove();
@@ -37,12 +39,11 @@ $("#modalShowRelations").on('show.bs.modal', function(e) {
             row.insertCell(8).innerHTML = pair["Rel"];
         }
     }
-
-
-    $(e.currentTarget).find('h4[id="conceptSummary_name"]').text(clickedConcept);
+    /*$(e.currentTarget).find('h4[id="conceptSummary_name"]').text(clickedConcept);
     $("#table_goldSummary").find("tr:not(:first)").remove();
     for (let rel of edgeList) {
         if (rel.includes(clickedConcept)) {
+            console.log(rel);
             let table = document.getElementById("table_goldSummary");
             let row = table.insertRow(table.rows.length);
             let cell0 = row.insertCell(0);
@@ -52,7 +53,7 @@ $("#modalShowRelations").on('show.bs.modal', function(e) {
             cell1.innerHTML = rel[1];
             cell2.innerHTML = rel[2];
         }
-    }
+    }*/
     //make the rows clickable and open a box with burst comparisons
     $("tr").on('click', function(e) {
         selectedBurstPair = [];
@@ -95,6 +96,24 @@ $("#modalShowBursts").on('show.bs.modal', function(e) {
     }
 });
 
+
+$("#modalShowContext").on('show.bs.modal', function(e) {
+    $(e.currentTarget).find('h4[id="context"]').text(clickedConcept + " (from " + currStartSent + " to " + currendSent + ")");
+    $("#table_sentences").find("tr:not(:first)").remove();
+    for (let s = currStartSent; s <= currendSent; s++) {
+        //console.log($sentList.filter(x => x.sent_id === s)[0]['text']);
+        let table = document.getElementById("table_sentences");
+        let row = table.insertRow(table.rows.length);
+        let cell0 = row.insertCell(0);
+        cell0.innerHTML = s;
+        let cell1 = row.insertCell(1);
+        cell1.innerHTML = $sentList.filter(x => x.sent_id === s)[0]['text'];
+        if ($sentList.filter(x => x.sent_id === s)[0]['type'].endsWith("title")) {
+            cell1.setAttribute("style", "font-weight: bold" );
+        }
+    }
+});
+
 function getColor (burstID) {
     let status = bursts.find(x => x.ID === burstID).status;
     let colors = {
@@ -106,21 +125,6 @@ function getColor (burstID) {
     return colors[status];
 }
 
-d3.json(src="../static/full_gold.json", function (error, graphData) {
-    if (error) throw error;
-
-    graphData.nodes.forEach(function (n) {
-        idToNode[n.id] = n;
-        //nodeList.push(n.name);
-    });
-
-    graphData.links.forEach(function (e) {
-        e.source = idToNode[e.source].name;
-        e.target = idToNode[e.target].name;
-        e.force = e.annotators.length;
-        edgeList.push([e.source, e.target, e.force]);
-    });
-});
 
 d3.gantt = function() {
     var FIT_TIME_DOMAIN_MODE = "fit";
@@ -180,7 +184,7 @@ d3.gantt = function() {
         //x = d3.scaleTime().domain([ timeDomainStart, timeDomainEnd ]).range([ 0, width ]).clamp(true);
 
         x = d3.scaleLinear()
-            .domain([0,maxSent])
+            .domain([1,maxSent])
             .range([0,width]);
 
         y = d3.scaleBand()
@@ -202,8 +206,9 @@ d3.gantt = function() {
         initTimeDomain();
         initAxis();
 
-        var svg = d3.select("body")
+        var svg = d3.select("#container")
             .append("svg")
+            .attr("style","background: none")
             .attr("class", "chart")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -217,9 +222,10 @@ d3.gantt = function() {
             .data(bursts, keyFunction).enter()
             .append("rect")
             .attr('stroke', 'black')
+            // TODO SE2020: il bordo più spesso per il primo burst "lungo" non è indispensabile in PRET. Commentare il codice se si decide poi di non avere questa funzione, anche perché per settare l'attributo bisogna avere in input l'informazione sul firstLongest, che non è detto che ci sia in futuro
             //use a thicker border for the first burst longer than the average length of a concept
-            .attr('stroke-width', function (d) {
-                if (firstLongest[d.concept] === d.ID) {return "3";} else {return "1";}})
+            //.attr('stroke-width', function (d) {
+               // if (firstLongest[d.concept] === d.ID) {return "3";} else {return "1";}})
             .attr("rx", 5)
             .attr("ry", 5)
             .attr("class", function(d){
@@ -234,6 +240,8 @@ d3.gantt = function() {
             .attr("width", function(d) {
                 return (x(d.endSent) - x(d.startSent) + 1);
             });
+
+        console.log(bursts)
 
         // append hidden ruler lines
         svg.selectAll(".chart")
@@ -261,6 +269,28 @@ d3.gantt = function() {
             .style("stroke", "grey")
             .style("display", "none");
 
+
+
+        // draw vertical lines to mark boundaries between sections
+
+        var sectionTitlesSents = $sentList.filter(x => x.type === "section title").map(x => x.sent_id);
+
+        // TODO SE2020: vedere se in PRET si possono sistemare queste linee separatrici per i capitoli
+        for (let num in sectionTitlesSents) {
+            svg.selectAll(".chart")
+                .data(bursts, keyFunction).enter()
+                .append("line")
+                .attr("id", function() { return "section" + num })
+                .attr("class", "boundary")
+                .attr("x1", function() { return (x(sectionTitlesSents[num])) })
+                .attr("y1", 0)
+                .attr("x2", function() { return (x(sectionTitlesSents[num])) })
+                .attr("y2", height)
+                .style("stroke-width", 2)
+                .style("stroke", "grey");
+        }
+
+
         svg.selectAll("rect")
             .on("click", function() {
                 d3.select(this).classed("selected", !d3.select(this).classed("selected"));
@@ -276,12 +306,15 @@ d3.gantt = function() {
                     }
                 }
             })
-            /*
-            TODO: show info about all relations of that burst once it's double clicked
-            .on("dblclick", function () {
+            // on rightclick, open a box with the text of sentences
+            .on("contextmenu", function (d) {
+                d3.event.preventDefault();
+                clickedConcept = d.concept;
+                currStartSent = d.startSent;
+                currendSent = d.endSent;
+                $("#modalShowContext").modal("show");
 
             })
-            */
             .append('title').text(function (d) { return (d.concept +
             " (id: " + d.ID + ")\n" +
             "start: " + d.startSent + "\nend: " + d.endSent + "\n" +
@@ -349,9 +382,6 @@ d3.gantt = function() {
 
 
 
-
-
-
     gantt.margin = function(value) {
         if (!arguments.length)
             return margin;
@@ -362,15 +392,12 @@ d3.gantt = function() {
     gantt.timeDomain = function(value) {
         if (!arguments.length)
             return [ timeDomainStart, timeDomainEnd ];
-        timeDomainStart = +value[0], timeDomainEnd = +value[1];
+        timeDomainStart = +value[0];
+        timeDomainEnd = +value[1];
         return gantt;
     };
 
-    /**
-     * @param {string}
-     *                vale The value can be "fit" - the domain fits the data or
-     *                "fixed" - fixed domain.
-     */
+
     gantt.timeDomainMode = function(value) {
         if (!arguments.length)
             return timeDomainMode;
@@ -429,3 +456,73 @@ $(document).click(function (event) {
     }
 });
 
+
+
+//TODO SE2020: vedere se in PRET è fattibile poosizionare il gantt sulla sezione richiesta
+$(".time-btn").click(function () {
+    changeTimeDomain(this.id);
+})
+/*
+function changeTimeDomain(timeDomainString) {
+    this.timeDomainString = timeDomainString;
+    switch (timeDomainString) {
+        case "0"://"1hr":
+            //format = "%H:%M:%S";
+            gantt.timeDomain([ d3.timeHour.offset(getEndDate(), -1), getEndDate() ]);
+            break;
+        case "1"://"3hr":
+            //format = "%H:%M";
+            gantt.timeDomain([ d3.timeHour.offset(getEndDate(), -3), getEndDate() ]);
+            break;
+
+        case "2"://"6hr":
+            //format = "%H:%M";
+            gantt.timeDomain([ d3.timeHour.offset(getEndDate(), -6), getEndDate() ]);
+            break;
+
+        case "3"://"1day":
+            //format = "%H:%M";
+            gantt.timeDomain([ d3.timeDay.offset(getEndDate(), -1), getEndDate() ]);
+            break;
+
+        case "4"://"1day":
+            //format = "%H:%M";
+            gantt.timeDomain([ d3.timeDay.offset(getEndDate(), -1), getEndDate() ]);
+            break;
+
+        case "5"://"1day":
+            //format = "%H:%M";
+            gantt.timeDomain([ d3.timeDay.offset(getEndDate(), -1), getEndDate() ]);
+            break;
+
+        //default:
+            //format = "%H:%M"
+
+    }
+    //gantt.tickFormat(format);
+    gantt.redraw(tasks);
+}*/
+
+
+bursts.sort(function(a, b) {
+    return a.endSent - b.endSent;
+});
+var maxSent = bursts[bursts.length - 1].endSent;
+bursts.sort(function(a, b) {
+    return a.startSent - b.startSent;
+});
+var minSent = bursts[0].startSent;
+
+//FIXME: change tick format
+var format = "%H:%M";
+
+var burstStatus = {
+    "FIRST" : "bar-running",
+    "LAST" : "bar-failed",
+    "ONGOING" : "bar-succeeded",
+    "UNIQUE" : "bar-killed"
+};
+
+
+var gantt = d3.gantt().burstTypes(concepts).burstStatus(burstStatus).tickFormat(format);
+gantt(bursts);

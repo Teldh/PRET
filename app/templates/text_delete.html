@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+<body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+              <div class="card card-signin my-5" style="background-color:rgb(255,255,255,0.9)">
+                <div class="card-body">
+                    <h3>Delete Text</h3>
+                    <div style="font-size:14px">
+                        Select a text to delete it.<br>
+                        ATTENTION: all the annotations, golds and results from the automatic extraction methods will be deleted.
+                    </div>
+                    <br>
+                    <h5 class="card-title text-center">Select a text to delete</h5>
+                      <div class="form-group">
+                            <form action="" id="form" method="post" class="form" role="form">
+                              {{ form.csrf_token }}
+                              <div class="form-group ">
+                                  {{ form.book_cap.label (class_='control-label')}}
+                                  {{ form.book_cap(class_='form-control')}}
+                              </div>
+                                <input class="btn btn-primary" type="button" onclick="showModal()" id="pre_delete"  value="Delete" style="cursor:pointer">
+
+                                <div class="modal fade" id="confirmDeletion" role="dialog">
+                                        <div class="modal-dialog">
+
+                                            <!-- Modal content-->
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h4 class="modal-title">Delete</h4>
+                                                    <button type="button" class="close" data-dismiss="modal" >&times;</button>
+                                                </div>
+                                                <div class="modal-body" id="book_to_delete">
+
+                                                </div>
+
+                                                <div class="modal-footer">
+                                                    <input class="btn btn-danger" id="submit" name="submit" type="submit" value="Delete">
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                            </form>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <script type="text/javascript">
+           function showModal() {
+                $("#confirmDeletion").modal("show");
+           }
+
+           $('#confirmDeletion').on('show.bs.modal', function() {
+               var e = document.getElementById("book_cap");
+               var libro = e.options[e.selectedIndex].text;
+               document.getElementById("book_to_delete").innerHTML = "You are about to delete<br><br>" + libro
+                   + "<br><br>" +"All the annotations will be erased. Are you sure?";
+
+           });
+        </script>
+{% endblock %}

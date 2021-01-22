@@ -2,51 +2,162 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
 <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
-        <div class="container">
-          <div class="row">
-            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
-              <div class="card card-signin my-5" style="background-color:rgb(255,255,255,0.9)">
+
+    <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:0.5rem;border-radius:4px;max-width: 1135px;padding:15px">
+    <h3>Gold Standard</h3>
+            <span style="font-size: 16px;">A Gold Standard is a ground truth annotation dataset. It can be based on a single trusted annotation, or can be obtained by combining multiple manual annotations into a single one. Since gold standards are assumed to be error-free, they can be used as ground truth to analyse a phenomenon or to test the accuracy of a system.</span>
+
+            <br><b>Combination criteria:</b><br>
+            <span style="font-size: 16px;">If you want to build your Gold Standard as the combination of different annotations, you have to specify the combination criteria. By selecting UNION your gold dataset will contain all the relations annotated by each annotator, while INTERSECTION selects only relation pairs shared by all annotations. If you want a different % of intersections, you can specify it, e.g., 50% means that your gold standard includes all the prerequisite relations annotated by at least half of the annotators.
+</span>
+
+            <br><b>Tips:</b><br>
+            <span style="font-size: 16px;">If you need a Gold Standard for training and testing an automatic relation extraction system, choose INTERSECTION: this will select the pairs where the degree of certainty is higher. If you want to analyse the realisation of PRs in texts, or perform any other study on PR main characteristics, we suggest to choose UNION: this way you will be able to analyse every case where the experts believed to encounter a relation.</span>
+
+    </div>
+        <div class="container" style=" margin-top:0.5rem;max-width: 1135px;padding:15px">
+        <div class="row" >
+            <div class="col" style="background-color:rgb(255,255,255,0.9);border-radius:4px">
+                    <div class="card-body">
+                        <h4>Create a Gold Standard</h4>
+                          <!--<div class="form-group">
+
+                          </div>-->
+                        <form action="" id="form" method="post" class="form" role="form">
+                              {{ form.csrf_token }}
+                              <div class="form-group ">
+                                  {{ form.book_cap.label (class_='control-label')}}
+                                  {{ form.book_cap(class_='form-control')}}
+                              </div>
+                            Annotation dataset:<br>
+                            <fieldset class="form-group" id="annotations">
+                            {% for choice in form.annotation %}
+                                <div class="form-check" >
+                                    {{ choice(class="form-check-input", onclick="calcola_agreements(); nome_gold();") }}
+                                    {{ choice.label(class="form-check-label") }}
+
+                                </div>
+                            {% endfor %}
+                            </fieldset>
+
+                            <div class="form-group ">
+                                  {{ form.agreements.label (class_='control-label')}}
+                                  {{ form.agreements(class_='form-control')}}
+                            </div>
+
+                            <div class="form-group ">
+                                  {{ form.name.label (class_='control-label')}}
+                                  {{ form.name(class_='form-control')}}
+                              </div>
+
+                            <input class="btn btn-primary" id="submit" name="submit" type="submit" value="Create Gold Standard">
+                        </form>
+                    </div>
+            </div>
+            <div class="col" style="background-color:rgb(255,255,255,0.9); margin-left:50px;border-radius:4px;height:550px;overflow:auto;">
                 <div class="card-body">
-                    <h5 class="card-title text-center">Create a Gold Standard</h5>
-                      <div class="form-group">
-                        {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
-                  </div>
+                <h4>List of Golds</h4>
+                    <br>
+                <table class="table table-bordered" id="table">
+                <tr>
+                <th>Title</th>
+                <th>Chapter</th>
+                <th>Gold name</th>
+                {% for gold in file['golds'] %}
+                <tr>
+                    <td> {{ gold.title }}</td>
+                    <td> {{gold.cap}}</td>
+                    <td> {{gold.name}}</td>
+                    <td> <a href="/download_gold/{{ gold.bid }},{{ gold.cap }}" >
+                                <button class="btn btn-primary" style="font-size : 15px; ">⭳</button>
+                            </a>
+                    </td>
+                </tr>
+                {% endfor %}
+
+              </table>
                 </div>
             </div>
-          </div>
-          {% with messages = get_flashed_messages(with_categories=true) %}
-  <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert alert-{{ category }} alert-dismissible" role="alert">
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <!-- <strong>Title</strong> --> {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}   
         </div>
         
         <script type="text/javascript">
-            let book_select = document.getElementById('book_cap')
-            let annotation_select = document.getElementById('annotation')
-            
-            book_select.onchange = function() {
-                
+            let book_select = document.getElementById('book_cap');
+            let annotation_select = document.getElementById('annotations');
+            let agreements_select = document.getElementById('agreements');
+            let name = document.getElementById('name');
+            let count = 0;
+
+            getAnnotations();
+            calcola_agreements();
+            nome_gold();
+
+            function getAnnotations(){
                 book_cap = book_select.value;
                 fetch('/gold_standard/' + book_cap).then(function(response) {
+
                     response.json().then(function(data) {
-                         
+
                         let optionHTML = '';
-                        
-                        data.annotation.forEach(function(annotation){
-                        console.log(annotation.id)
-                            optionHTML += '<option value="' + annotation.id + '">' + annotation.name + '</option>';
-                        })
-                        
+
+                        data.annotation.forEach(function (annotation) {
+
+                            optionHTML +=
+                                '<div class="form-check">' +
+                                '<input class="form-check-input"  name="annotation" id="' + annotation.id + '" type="checkbox" value="' + annotation.id + '" onclick="calcola_agreements();nome_gold();">' +
+                                '<label class="form-check-label" for="' + annotation.id + '">' + annotation.name + '</label><br>' +
+                                '</div>';
+
+                        });
                         annotation_select.innerHTML = optionHTML;
                     });
-                });
+            });
+        };
+
+        book_select.onchange = function() {
+            getAnnotations();
+            calcola_agreements();
+            nome_gold();
+        };
+
+            function calcola_agreements() {
+                var values = document.querySelectorAll('input[type="checkbox"]:checked');
+
+                if (Object.keys(values).length <= '1') {
+                    agreements_select.disabled = true;
+                }
+                else {
+                    agreements_select.disabled = false;
+                    fetch('/gold_standard2/' + Object.keys(values).length).then(function (response) {
+                        response.json().then(function (data) {
+
+                            let optionHTML = '';
+
+                            data.agreements.forEach(function (agreements) {
+                                optionHTML += '<option value="' + agreements + '">' + agreements + '</option>';
+
+                            });
+                            agreements_select.innerHTML = optionHTML;
+                        });
+                    });
+                }
+            }
+
+            function nome_gold(){
+                var annotazioni_selezionate = document.querySelectorAll('input[type="checkbox"]:checked');
+                console.log(annotazioni_selezionate);
+
+                var gold_name = "Gold made by:";
+
+                var i;
+                for (i = 0; i < annotazioni_selezionate.length; i++) {
+                    var annotatore = $('label[for="'+annotazioni_selezionate[i].id+'"]').text().split(":")[1];
+                    console.log(annotatore);
+                    gold_name += annotatore;
+
+                }
+
+                name.value=gold_name;
             }
         </script>
+
 {% endblock %}

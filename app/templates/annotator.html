@@ -12,23 +12,16 @@
   Success! (div with Bootstrap alert class)
 </div>
 <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;max-width: 1135px;margin-bottom:3rem;padding:15px">
-    <tr class="noborders">
-        <td colspan="2">
-            <h2>Read the text and insert prerequisite relations among concepts:</h2>
-            
-            <h6><button onclick="myFunction()" class="btn btn-primary">Read the guidelines</button></h6>
-            
-        </td>
-    </tr>
-    
-    <script>
-        function myFunction() {
-            window.open("{{ url_for('guidelines') }}");
-        }       
-    </script>
+<h2>Create Annotation</h2>
+In this page you can create annotated corpora to build your dataset.
+Here, you find the text and the concepts of your terminology (if you uploaded one) highlighted in yellow. If you didn’t use a terminology for your text, you can add concepts by dragging them to the “Concepts added by you” section; then, their occurrences will be highlighted in green. If you added a concept by mistake, just delete it by clicking on the bin.
+    In order to insert a relation between a target and a prerequisite concept, double click on a highlighted concept in the text and insert the relation the “Add prerequisites for the selected concept” window. Choose the prerequisite(s) from the list of concepts and provide a weight to the relation.
+<br>Before starting, read the <a href="" target="_blank"onclick="myFunction();">Annotation Guidelines and Knowledge Elicitation Questions</a> so know the annotation criteria.
+
+    <br>
     
     
-    
+
     <div id="leftside">
         <h2>TEXT<img src="../static/images/arrow.svg" width="20px"></h2>
         <div class="panel panel-primary" style="border:2px solid;border-color:#2B67D2">
@@ -36,12 +29,12 @@
             <div class="panel-body" id="annotatedText" contenteditable="false" style="padding:4px;height:700px"></div>
         </div>
     </div>
-    <div id="rightside" style="height:782px">
+    <div id="rightside">
         <h2>CONCEPTS<img src="../static/images/arrow.svg" width="20px"></h2>
         <div class="panel panel-primary" style="border:2px solid;border-color:#2B67D2">
             <div class="panel-heading"style="background-color:#2B67D2;padding:8px"><img src="../static/images/balls.svg" width="20"></div>
             <div class="panel-body" style="padding:4px">
-                <p class="highlight"><strong>Concepts originally provided (sorted by temporal occurrence):</strong></p>
+                <p class="highlight"><strong>Concepts originally provided:</strong></p>
 
                 <div class="pn-ProductNav_Wrapper">
                     <nav id="pnProductNav" class="pn-ProductNav">
@@ -60,7 +53,6 @@
                     </button>
                 </div>
 
-                <br>
 
                 <hr size="2">
 
@@ -86,6 +78,7 @@
                 <br>
                 <input type='text' id='active_concept' class="form-control name_list" placeholder="Drag words here to add new concepts" data-toggle="modal" data-target="#modalAddTerm" data-to-pass="my_value"/>
                 <br>
+                <span style="font-weight: bold;">To delete a concept, click the trash can icon </span><br>
                 <div id="recycle-container">
                     <input type='image' id='delete_concept' src="../static/images/trashcan-146455_1280.png" title="click to detete a manual concept" width="50px"/>
                 </div>
@@ -99,9 +92,9 @@
         <!--
         <h2 class="block_title">CONCEPTS<img src="../static/images/arrow.svg" width="15px"></h2>
         -->
-
+        <br>
         <h2 class="block_title">RELATIONS<img src="../static/images/arrow.svg" width="20px"></h2>
-        <div class="panel panel-primary" id="panel_relations" style="border:2px solid;border-color:#2B67D2;height:200px">
+        <div class="panel panel-primary" id="panel_relations" style="border:2px solid;border-color:#2B67D2;height:250px">
             <div class="panel-heading"style="background-color:#2B67D2;padding:8px"><img src="../static/images/Split-arrows_2.svg" width="auto" style="color:white"></div>
             <div class="panel-body" style="padding:4px">
 
@@ -113,7 +106,7 @@
             <div id="preview">
                 <table class="table table-bordered" id="table_recap_full">
                     <tr>
-                        <th></th><th>ID</th><th>SENTENCE</th><th>PREREQUISITE</th><th>ADVANCED</th><th>WEIGHT</th>
+                        <th></th><th>ID</th><th>SENTENCE</th><th>PREREQUISITE</th><th>TARGET</th><th>WEIGHT</th>
                     </tr>
                 </table>
             </div>
@@ -123,23 +116,41 @@
         <!-- FIXME: uncomment submit button when the form is complete
         <input type="button" name="submit" id="submit" class="btn btn-info" value="Submit!" /> -->
 
+    <div style="margin-top:40px;"><button type="button" id="show_save_modal" class="btn btn-primary float-right">Save annotation</button></div>
     </div>
-    <table id="finalbuttons" style="margin: 0 auto;">
-        <tr>
-            <!-- TODO: delete this (old)
-            <td><button onclick="updateInserted()" type="button" name="add" id="add" class="btn btn-success">Add More</button></td>
-            -->
+
+
 
             <!--
-            <td><button onclick="renderHTML()" type="button" id="see_preview" class="btn">See all the relations inserted so far</button></td>
-            <td><input type="submit" value="Save" class="btn btn-primary" id="save"/></td>
-            -->
-
             <td><a id="download" onclick="downloadJSON(this);" class="btn final_button"><i class="fa fa-download"></i>Save partial annotation</a></td>
             <td><a id="submit" onclick="submit(this);" class="btn btn-success final_button" value="Submit!" />Save the final annotation</td>
-        </tr>
-    </table>
+            -->
+
+
+
     <div style="clear: both;"></div>
+</div>
+
+<div class="modal fade" id="save_modal" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Saving annotation</h3>
+                <button type="button" class="close" data-dismiss="modal" onclick="document.getElementById('active_concept').value = '';">&times;</button>
+            </div>
+            <div class="modal-body">
+                Click "Save partial annotation" if you want to stop for now and resume the annotation later.<br><br>
+                Click "Save final annotation" if you have finished and don’t need to add more relations (you’ll be able to revise and modify the inserted relations in the Revision page).
+            </div>
+            <div class="modal-footer">
+                <button id="download" onclick="downloadJSON(this);" class="btn final_button">Save partial annotation</button>
+                 <button id="submit" onclick="submit(this);" class="btn btn-success final_button" value="Submit!" />Save final annotation</a>
+            </div>
+        </div>
+
+    </div>
 </div>
     
 
@@ -189,6 +200,7 @@
             </div>
             <div class="modal-body">
                 <label for="del_select">Select the concept you want to delete:</label>
+                <input type="text" name="name[]" autocomplete="off" id="del_select" placeholder="Write concept to eliminate" class="form-control name_list autocomplete" required/>
             </div>
             <div class="modal-footer">
                 <button onclick="deleteTerm()" type="button" class="btn btn-default btn-success" data-dismiss="modal">Confirm</button>
@@ -232,6 +244,7 @@
                 <h4 class="modal-title">Add prerequisites for the selected concept</h4>
             </div>
             <div class="modal-body">
+
                 <!--<label for="selectedAdvanced">Prerequisites of:</label>-->
                 <input type="text" id="selectedAdvanced" class="form-control name_list" placeholder="Insert a term in its basic form (case insensitive)" required>
                 <label for="selectedsentence">in sentence: </label>
@@ -359,8 +372,18 @@
                  var json = {{ file.json|tojson }}
              {% else %}
                  var flag = false
-            {% endif %}    
-             
+            {% endif %}
+
+window.onbeforeunload = confirmExit;
+  function confirmExit()
+  {
+    return "You have attempted to leave this page.  If you have made any changes without clicking the Save button, your changes will be lost.  Are you sure you want to exit this page?";
+  }
+
+function myFunction() {
+    window.open("{{ url_for('guidelines') }}");
+}
+
 </script>
 <script src="../static/annotator.js"></script>
 {% endblock %}

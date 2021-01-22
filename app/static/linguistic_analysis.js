@@ -5,8 +5,9 @@ var sent_ids = [];
 var clickedResult = {};
 
 
+
+
     var result = JSON.parse($json);
-        //console.log(result);
 
     insertedRelations = result["savedInsertedRelations"];
 
@@ -19,13 +20,20 @@ var clickedResult = {};
                 concepts.push(rel["advanced"]);
             }
             //let currSent = $sentList[rel["sent"]-1]["text"];
-            //console.log(insertedRelations.indexOf(rel));
-            //console.log(currSent);
         }
     }
 
+    var metodo2= false;
+
     if(insertedRelations) {
         weights = Array.from(new Set(insertedRelations.map(x => x["weight"])));
+
+        if(weights.length == 1 && weights[0] == undefined){
+
+            $("#edge_weight").hide();
+            $("#edge_weight_label").hide();
+            metodo2=true;
+        }
     
     }
     
@@ -56,7 +64,51 @@ var clickedResult = {};
         options += "<option value='" + sent_ids[i] + "'>" + sent_ids[i] + "</option>";
     }
     $('select[name="sent_id"]').append(options);
- 
+
+
+        function color_word_in_sentence(word,sent,color){
+            var sentence = sent.toLowerCase();
+            word = word.toLowerCase();
+            var bigger_concepts = {}; // array con id dei concetti in una frase che includono la parola, ad esempio phone network include network
+            // devo dividere la frase in: primo pezzo + parola + ultimo pezzo
+            //in modo da evidenziare il concetto giusto ( se la parola è "network" e la frase è "phone network is a network" devo evidenziare il secondo network!)
+
+            //rimpiazzo ogni concetto più grosso con "xxx"
+            for(c in concepts){
+                if(concepts[c].includes(word) && concepts[c] != word)
+                    if(sent.includes(concepts[c])){
+                        var re = new RegExp(concepts[c],"g");
+                        sentence = sentence.replace(re, "xxx"+c);
+                        bigger_concepts["xxx"+c] = concepts[c];
+                    }
+            }
+
+            //splitto sul prerequisito
+            if(sentence.includes(word)) { // il prerequisito potrebbe non essere nella frase
+                sentence = sentence.split(word);
+                //coloro prerequisito, se il prerequisito è presente più volte coloro solo la prima occorrenza
+
+                var temp = sentence[0] + '<span style="background-color:'+color+'">' + word + '</span>';
+
+                //se la frase non è finita
+                if (sentence[1] != undefined) {
+                    temp += sentence[1];
+                    for (i = 2; i < sentence.length; i++)
+                        temp += word + sentence[i];
+                }
+                sentence = temp;
+            }
+
+
+            //rimetto i concetti più grossi
+            for(b in bigger_concepts){
+                var re = new RegExp(b,"g");
+                sentence = sentence.replace(re, bigger_concepts[b]);
+            }
+
+
+            return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+    }
 
 
 $("#find").click(function () {
@@ -69,180 +121,204 @@ $("#find").click(function () {
     let selectedAdvanced = $('#advanced_name').val();
     let selectedWeight = $('#edge_weight').val();
 
+    let no_relations_matched = true;
+
     for (let rel of insertedRelations) {
         if ((selectedPrereq === "ANY CONCEPT" || rel['prerequisite'] === selectedPrereq) &&
             (selectedAdvanced === "ANY CONCEPT" || rel['advanced'] === selectedAdvanced) &&
-            (selectedWeight === "ANY WEIGHT" || rel['weight'] === selectedWeight) &&
-            (selectedSentence === "ANY SENTENCE" || rel['sent'] === selectedSentence)) {
+            ( metodo2 || (selectedWeight === "ANY WEIGHT" || rel['weight'] === selectedWeight) ) &&
+            (selectedSentence === "ANY SENTENCE" || rel['sent'].toString() === selectedSentence)) {
 
+            if(no_relations_matched)
+                no_relations_matched = false;
             //append a text area for each relation
             let currSent = $sentList[rel["sent"]-1]["text"];
-            console.log("currSent: ", currSent);
-            console.log("index of curr rel: ", insertedRelations.indexOf(rel));
 
-            $("#paper").append('<div class="result_margin">Context: \n' +
-                '                       <input id="title' + insertedRelations.indexOf(rel) + '" type="text" name="title" readonly />\n' +
-                '                   </div>\n' +
-                '                   <textarea class="result_text" style="width:-webkit-fill-available" name="text" rows="4" readonly '+
-                '                       id="text' + insertedRelations.indexOf(rel) + '"'+
-                '                       rel_id="' + insertedRelations.indexOf(rel) + '"'+
-                '                       sent_id="' + rel['sent'] + '"'+
-                '                       prereq="' + rel['prerequisite'] + '"'+
-                '                       advanced="' + rel['advanced'] + '"'+
-                '                       weight="' + rel['weight'] + '"'+
-                '                   >'+ currSent +
-                '                   </textarea>\n' +
-                '                   <br />');
-                //'                  <textarea class="result_text" id="text' + insertedRelations.indexOf(rel) + '" name="text" rows="4" readonly style="overflow: hidden; word-wrap: break-word; resize: none; height: 160px; ">'+ currSent +'</textarea>');
+            // coloro prerequisito in giallo e target in verde
+            var sentence = color_word_in_sentence(rel['prerequisite'], currSent, "#ff6666");
+            sentence = color_word_in_sentence(rel['advanced'], sentence, "lightblue");
+
+
+
+
+
+            $("#paper").append('' +
+                '<div> ' +
+                '     <span style="font-weight: bold;">Sentence:</span> ' + (rel['sent']) +
+                '   <table class="table table-bordered">'+
+                '       <tr><td>' + sentence +
+                //'           ' + sentence[0] +'<span>'+ rel['prerequisite'] +'</span>'+ sentence[1] +'</td>' +
+                '       </td></tr>'+
+                '   </table>' +
+                '   <div  style="float:right; margin-top: -15px;">' +
+                '       <button type="button" class="btn btn-primary btn-sm result_text"' +
+                ' data-rel_id="' + insertedRelations.indexOf(rel) + '"' +
+                ' data-sent_id="' + rel['sent'] + '"' +
+                ' data-prereq="' + rel['prerequisite'] + '"' +
+                ' data-advanced="' + rel['advanced'] + '"' +
+                ' data-weight="' + rel['weight'] + '"' +
+                '">Show context</button>'+
+                '   </div>' +
+                '</div><br><br>');
+
         }
     }
 
+    if(no_relations_matched)
+        $("#paper").append('<div><span style="font-weight: bold;">No relations matched your critera</span></div> ');
+
+
     $('.result_text').click(function (e) {
+
         clickedResult = {
-            rel_id: e.target.getAttribute("rel_id"),
-            sent_id: e.target.getAttribute("sent_id"),
-            prereq: e.target.getAttribute("prereq"),
-            advanced: e.target.getAttribute("advanced"),
-            weight: e.target.getAttribute("weight")
+            rel_id: $(this).data( "rel_id" ),
+            sent_id: $(this).data( "sent_id" ),
+            prereq: $(this).data( "prereq" ),
+            advanced: $(this).data( "advanced" ),
+            weight: $(this).data( "weight" )
         };
-        console.log(clickedResult);
+
         $('#modalAnalysis').modal('show');
     });
+});
 
-    $('#modalAnalysis').on('show.bs.modal', function(e) {
+/* Show Context modal*/
 
-        $('#minigraph_modal').html($('#minigraph').html());
+var frase_mostrata;
 
-        let centralSent = $sentList[clickedResult.sent_id-1]["text"];
+$('#modalAnalysis').on('show.bs.modal', function(e) {
 
-        //erase the paper from previous results and re-populate it
-        $('#paper_modal').empty();
-        $("#paper_modal").append('<textarea class="result_text_modal" style="width:-webkit-fill-available" rows="7" name="text" readonly '+
-            '                       id="text' + clickedResult.rel_id + '"'+ '>'+ centralSent +
-            '                     </textarea>');
 
-        // populate the table in POS tab
-        $("#table_pos").find("tr:not(:first)").remove();
-        let tokens = $conll.filter(x => x.sent_id.toString() === clickedResult.sent_id);
-        for (let tok of tokens) {
-            //FIXME: highlighted_text += tok["forma"] + " ";
-            let table = document.getElementById("table_pos");
-            let row = table.insertRow(table.rows.length);
-            let cell0 = row.insertCell(0);
-            let cell1 = row.insertCell(1);
-            let cell2 = row.insertCell(2);
-            let cell3 = row.insertCell(3);
-            let cell4 = row.insertCell(4);
-            let cell5 = row.insertCell(5);
-            cell0.innerHTML = tok["sent_id"];
-            cell1.innerHTML = tok["tok_id"];
-            cell2.innerHTML = tok["forma"];
-            cell3.innerHTML = tok["lemma"];
-            cell4.innerHTML = tok["pos_coarse"];
-            cell5.innerHTML = tok["pos_fine"];
-        }
+    let centralSent = $sentList[clickedResult.sent_id-1]["text"];
+    frase_mostrata = clickedResult.sent_id-1;
 
-        /*
-        //highlight the concepts
-        var highlighted_text = "";
-        for (let )
-        for (let tok of tokens) {
-            highlighted_text += tok["forma"] + " ";
-        */
-        //find word formas to highlight
-        //$conll.filter(x => x.sent_id === clickedResult.sent_id).filter(x => x["lemma"].toUpperCase() === "COMPUTER")
+    $('#next_button').css("display","block");
+    $('#prev_button').css("display","block");
 
-        $('#prev_button').click(function () {
-            console.log("clicked prev button");
-            let prevSent = $sentList[clickedResult.sent_id - 2]["text"];
-            $('#paper_modal').empty();
-            $("#paper_modal").append('<textarea class="result_text_modal" name="text" readonly '+
-                '                       id="text' + clickedResult.rel_id + '"'+ '>'+ prevSent +
-                '                     </textarea>');
-        });
+    //erase the paper from previous results and re-populate it
+    $('#paper_modal').empty();
+    $("#relation").empty();
 
-        $('#next_button').click(function () {
-            console.log("clicked next button");
-            let nextSent = $sentList[clickedResult.sent_id]["text"];
-            $('#paper_modal').empty();
-            $("#paper_modal").append('<textarea class="result_text_modal" name="text" readonly '+
-                '                       id="text' + clickedResult.rel_id + '"'+ '>'+ nextSent +
-                '                     </textarea>');
-        });
-    });
+    centralSent = color_word_in_sentence(clickedResult.prereq,centralSent,"#ff6666");
+    centralSent = color_word_in_sentence(clickedResult.advanced,centralSent,"lightblue");
+    $("#relation").append('<span style="font-weight: bold;">Prerequisite:  </span>'+ clickedResult.prereq + '<br><span style="font-weight: bold;">Target: </span> ' + clickedResult.advanced+'<br><br>');
+    $("#paper_modal").append('<table class="table table-bordered result_text_modal" >'+ '<tr><td>'+centralSent + '</td></tr></table>');
+
+    // populate the table in POS tab
+    $("#table_pos").find("tr:not(:first)").remove();
+    let tokens = $conll.filter(x => x.sent_id === clickedResult.sent_id);
+    for (let tok of tokens) {
+        //FIXME: highlighted_text += tok["forma"] + " ";
+        let table = document.getElementById("table_pos");
+        let row = table.insertRow(table.rows.length);
+        let cell0 = row.insertCell(0);
+        let cell1 = row.insertCell(1);
+        let cell2 = row.insertCell(2);
+        let cell3 = row.insertCell(3);
+        let cell4 = row.insertCell(4);
+        let cell5 = row.insertCell(5);
+        cell0.innerHTML = tok["sent_id"];
+        cell1.innerHTML = tok["tok_id"];
+        cell2.innerHTML = tok["forma"];
+        cell3.innerHTML = tok["lemma"];
+        cell4.innerHTML = tok["pos_coarse"];
+        cell5.innerHTML = tok["pos_fine"];
+    }
+
+    /*grafo: deve comprendere un livello prima e un livello dopo del target*/
+    var target = clickedResult.advanced;
+    var nodi_prima = [];
+    var nodi_dopo = [];
+
+    for (let rel of insertedRelations){
+        if ( rel.advanced == target)
+            nodi_prima.push(rel.prerequisite);
+        else if(rel.prerequisite == target)
+            nodi_dopo.push(rel.advanced)
+    }
+
+    var G = new jsnx.DiGraph();
+    G.addNode(target,{color: 'lightblue'});
+    G.addNodesFrom(nodi_prima, {color: '#ff6666'});
+    G.addNodesFrom(nodi_dopo, {color: 'lightgreen'});
+
+    for(var n in nodi_prima)
+        G.addEdge(nodi_prima[n],target);
+    for(var n in nodi_dopo)
+        G.addEdge(target,nodi_dopo[n]);
+
+    jsnx.draw(G, {
+             element: '#canvas',
+             withLabels: true,
+             nodeStyle: {
+                 fill: function (d) {
+                     return d.data.color || '#AAA'; // any node without color is gray
+                 },
+                 stroke: 'none'
+             },
+             edgeStyle: {
+                'stroke-width': 4,
+                 fill: '#999'
+             },
+            labelStyle: {
+                "font-size": '12px',
+                'font-weight': 'bold',
+                "font-family": "sans-serif",
+                'text-anchor': 'middle',
+                'dominant-baseline': 'text-after-edge',
+
+                fill: 'black'
+            },
+            layoutAttr: {
+                charge:function (d) {
+                    if (d.data.color == "lightblue")
+                        return 120;
+                    else
+                        return -300;
+                 },
+                linkDistance: 160
+            },
+            stickyDrag: true
+    },false);
 });
 
 
 
-/*
-SVG for the mini-graph
- */
-
-var svg = d3.select("svg"),
-    width = +svg.attr("width"),
-    height = +svg.attr("height"),
-    g = svg.append("g")
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
-        .attr("id", "minigraph");
-
-var n = 2,
-    r = 30;
-var nodes = [{index: 0, x: 0, y: 0, vy: 0, vx: 0},
-             {index: 1, x: 150, y: 0, vy: 0, vx: 0}];
-//var links = d3.range(2).map(function(i) { return {source: i, target: (i + 3) % 2}; });
-var links = [{
-    source: {index: 0, x: 0, y: 0, vy: 0, vx: 0},
-    target: {index: 1, x: 150, y: 0, vy: 0, vx: 0}
-}];
-
-var simulation = d3.forceSimulation(nodes)
-    .force("charge", d3.forceManyBody().strength(-80))
-    .force("link", d3.forceLink(links).distance(20).strength(1).iterations(10))
-    .force("x", d3.forceX())
-    .force("y", d3.forceY())
-    .stop();
-
-// arrow
-g.append("marker")
-    .attr("id", "triangle")
-    .attr("refX", 6)
-    .attr("refY", 6)
-    .attr("markerWidth", 30)
-    .attr("markerHeight", 30)
-    .attr("markerUnits","userSpaceOnUse")
-    .attr("orient", "auto")
-    .append("path")
-    .attr("d", "M 0 0 12 6 0 12 3 6")
-    .style("fill", "black");
-
-// edge
-g.append("g")
-    .attr("stroke", "#000")
-    .attr("stroke-width", 3)
-    .selectAll("line")
-    .data(links)
-    .enter().append("line")
-    //.attr("x1", function(d) { return d.source.x; })
-    //.attr("y1", function(d) { return d.source.y; })
-    .attr("x2", function(d) { return d.target.x - r - 6; }) // 6: dimension of the marker
-    .attr("y2", function(d) { return d.target.y; })
-    .attr("marker-end", "url(#triangle)");
-
-// nodes
-g.append("g")
-    .attr("stroke", "#000")
-    .attr("stroke-width", 2)
-    .selectAll("circle")
-    .data(nodes)
-    .enter().append("circle")
-    .attr("cx", function(d) { return d.x; })
-    .attr("cy", function(d) { return d.y; })
-    .attr("r", r)
-    .style('fill', "red");
 
 
-/*
-$("#full_svg").append('<foreignobject class="node" x="0" y="110" width="100" height="100">\n' +
-    '    <input id="prerequisite_node" type="text" name="prerequisite_node"/>\n' +
-    '    </foreignobject>');
-*/
+    $('#prev_button').click(function () {
+
+        let prevSent = $sentList[frase_mostrata-1]["text"];
+        frase_mostrata--;
+
+        $('#paper_modal').empty();
+
+        prevSent = color_word_in_sentence(clickedResult.prereq,prevSent,"#ff6666");
+        prevSent = color_word_in_sentence(clickedResult.advanced,prevSent,"lightblue");
+
+        $("#paper_modal").append('<table class="table table-bordered result_text_modal" >'+
+                '                   <tr><td>'+ prevSent + '</td></tr></table>');
+
+        if(frase_mostrata == clickedResult.sent_id-2)
+            $('#prev_button').css("display","none");
+
+        $('#next_button').css("display","block");
+    });
+
+
+    $('#next_button').click(function () {
+
+        let nextSent = $sentList[frase_mostrata+1]["text"];
+        frase_mostrata++;
+
+        nextSent = color_word_in_sentence(clickedResult.prereq,nextSent,"#ff6666");
+        nextSent = color_word_in_sentence(clickedResult.advanced,nextSent,"lightblue");
+
+        $('#paper_modal').empty();
+        $("#paper_modal").append('<table class="table table-bordered result_text_modal" >'+
+                '                   <tr><td>'+ nextSent + '</td></tr></table>');
+
+        if(frase_mostrata == clickedResult.sent_id)
+            $('#next_button').css("display","none");
+        $('#prev_button').css("display","block");
+    });

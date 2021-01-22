@@ -8,14 +8,35 @@
     <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
     <link rel="stylesheet" type="text/css" href="../static/styles/simple_graph.css">
         
-    <div id="canvas" style="background-color: rgb(255,255,255,0.9);margin:3rem;border-radius:4px;padding:15px;"></div>
+    <div id="canvas" style="background-color: rgb(255,255,255,0.9);margin:3rem;border-radius:4px;padding:15px;height: -webkit-fill-available;">
+    <div class="container">
+            <header class="page-header">
+                <h1>Simple Graph</h1>
+            </header>
+
+            <div class="filters">
+                <div>
+                    <h3 id="h33" >Text:</h3>
+                </div>
+                <div>
+                <label id="select" for="annotator-select"></label>
+                <select id="annotator-select"></select>
+                </div>
+                <div class='button'>
+               <button onclick="onDownload()">Download Graph Structure</button>
+                </div>
+            </div>
+
 
     <div id="Analysis"></div>
 
+    </div>
+
     <script type="text/javascript">
-             var $json = {{ file|tojson }}   
-             $json = JSON.parse($json) 
+             var $json = JSON.parse(localStorage.getItem('testObject'));
+             console.log($json);
         </script>
     <script src="../static/simple_graph.js"></script>
-
+    </div>
+    </div>
 {% endblock %}

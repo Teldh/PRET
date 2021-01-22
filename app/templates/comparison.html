@@ -2,39 +2,95 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
 <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
-        <div class="container">
+        <div class="container" style="margin-top:0.5rem;">
           <div class="row">
-            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
-              <div class="card card-signin my-5" style="background-color:rgb(255,255,255,0.9)">
+            <div class="col-sm-10 col-md-8 col-lg-6 mx-auto" style="background-color:rgb(255,255,255,0.9);border-radius:4px;margin-bottom: 1rem;">
+
                 <div class="card-body">
+                    <h3>Comparison</h3>
+                    Compare two datasets (i.e., annotated datasets, gold standard or the result of automatic extraction methods) to see their similarities and differences.
+                    <br><br>
                     <h5 class="card-title text-center">Select a text and the two items to compare</h5>
                       <div class="form-group">
                             {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
-                  </div>
+                      </div>
                 </div>
             </div>
           </div>
         </div>
         <script type="text/javascript">
-            let book_select = document.getElementById('book_cap')
-            let annotation_select_1 = document.getElementById('comparison_1')
-            let annotation_select_2 = document.getElementById('comparison_2')
+            let book_select = document.getElementById('book_cap');
+            let annotation_select_1 = document.getElementById('comparison_1');
+            let annotation_select_2 = document.getElementById('comparison_2');
+            let gold = document.getElementById('gold');
+            let metodi = ["1","2","3","4","5","6"];
+
+            $('document').ready(fetchInput());
         
             book_select.onchange = function() {
-                
-                book_cap = book_select.value;
+                fetchInput();
+            };
+
+            function fetchInput(){
+
+                var book_cap = document.getElementById('book_cap').value;
                 fetch('/comparison/' + book_cap).then(function(response) {
                     response.json().then(function(data) {
                         let optionHTML = '';
-                        
+                        let optionGold = '<option value="None"> None </option>';
+
                         data.annotation.forEach(function(annotation){
-                        console.log(annotation.id)
+                        //console.log(annotation.id)
                             optionHTML += '<option value="' + annotation.id + '">' + annotation.name + '</option>';
-                        })
+
+                            if(typeof(annotation.id) == "string" && annotation.id.startsWith("gold"))
+                                 optionGold += '<option value="' + annotation.id + '">' + annotation.name + '</option>';
+
+                        });
                         annotation_select_1.innerHTML = optionHTML;
                         annotation_select_2.innerHTML = optionHTML;
+                        gold.innerHTML = optionGold;
+
+
+                        if (data.annotation[0] != undefined && [1,2,3,4,5,6].includes(data.annotation[0].id))
+                             showGold();
+                        else
+                             hideGold();
+
+
                     });
                 });
+
             }
+
+            // se scelgo il confronto fra due metodi devo mostrare il campo gold
+            function hideGold(){
+                gold.disabled = true;
+                $('#gold').parent().hide();
+            }
+
+            function showGold(){
+                gold.disabled = false;
+                $('#gold').parent().show();
+            }
+
+            if (!metodi.includes(annotation_select_1.value) || !metodi.includes(annotation_select_2.value) )
+                hideGold();
+
+
+            annotation_select_1.onchange = function(){
+                 if (metodi.includes(annotation_select_1.value) && metodi.includes(annotation_select_2.value))
+                     showGold();
+                 else
+                     hideGold();
+            };
+
+            annotation_select_2.onchange = function(){
+                 if (metodi.includes(annotation_select_1.value) && metodi.includes(annotation_select_2.value))
+                     showGold();
+                 else
+                     hideGold();
+            };
+
         </script>
 {% endblock %}

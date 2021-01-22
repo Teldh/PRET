@@ -83,6 +83,7 @@ var insertedRelations = [];
 var num_relations = 0;
 var textOnFocus = '';
 var sentOnFocus = null;
+var target_scelto = ""; // usato per tracciare dove mettere le icone del target
 var tokensOnFocus = [];
 var candidatesToHighlight = [];
 //concept activated in the scroll bar
@@ -109,7 +110,7 @@ $("#modalAddRelation").ready(function(){
                 '                           <td>' + num_slots +
                 '                           </td>' +
                 '                           <td>\n' +
-                '                               <input type="text" name="name[]" id="prerequisite' + num_slots + '" placeholder="Insert a prerequisite" class="form-control name_list autocomplete decrementable" required/>\n' +
+                '                               <input type="text" name="name[]" autocomplete="off" id="prerequisite' + num_slots + '" placeholder="Insert a prerequisite" class="form-control name_list autocomplete decrementable" required/>\n' +
                 '                           </td>\n' +
                 '                           <td>\n' +
                 '                               <div class="form-group">\n' +
@@ -170,7 +171,7 @@ $("#modalAddRelation").ready(function(){
                 '                           <td>' + num_slots +
                 '                           </td>' +
                 '                           <td>\n' +
-                '                               <input type="text" name="name[]" id="prerequisite' + num_slots + '" placeholder="Insert a prerequisite" class="form-control name_list autocomplete decrementable" required/>\n' +
+                '                               <input type="text" name="name[]" autocomplete="off" id="prerequisite' + num_slots + '" placeholder="Insert a prerequisite" class="form-control name_list autocomplete decrementable" required/>\n' +
                 '                           </td>\n' +
                 '                           <td>\n' +
             '                                   <select class="form-control decrementable" id="weight' + num_slots + '">\n' +
@@ -231,6 +232,8 @@ $("#modalAddRelation").ready(function(){
                     //console.log(rel);
                     //console.log(index);
                     insertedRelations.splice(index, 1);
+
+
                     break;
                 }
             }
@@ -254,6 +257,57 @@ $("#modalAddRelation").ready(function(){
             }
         }
     });
+
+    function checkSymmetric(prereq, advanced){
+        /* X -> Y e Y -> X*/
+        for (var i in insertedRelations)
+            if(insertedRelations[i].advanced == prereq && insertedRelations[i].prerequisite == advanced)
+                return true;
+
+        return false;
+    }
+
+    function checkCycle(prereq, advanced){
+        /* faccio una ricerca partendo dal target
+        se dal target riesco ad arrivare al prerequisito vuol dire che mettendo la relazione
+        prereq -> target si creerebbe un ciclo */
+        return BFS(advanced, prereq)
+    }
+
+    function isTransitive(prereq, advanced){
+        /* faccio una ricerca partendo dal prerequisito arrivando al target
+        * se esiste già un path che li collega allora la relazione che sto per immettere è transitiva*/
+        return BFS(prereq, advanced);
+    }
+
+
+    function getNeighbors (concept){
+        neighbors = [];
+        for (let key in insertedRelations){
+            if(insertedRelations[key].prerequisite == concept)
+                neighbors.push(insertedRelations[key].advanced)
+        }
+        return neighbors;
+    }
+
+    function BFS(from, to) {
+
+        let queue = [from];
+
+        while (queue.length) {
+
+            let curr = queue.pop();
+            nextLevel = getNeighbors(curr);
+
+            if( nextLevel.includes(to))
+                return true; //found
+            else
+                for(let i=0; i<nextLevel.length; i++)
+                    queue.push(nextLevel[i]);
+        }
+
+        return false; //not found
+    }
 
     $('#confirm_relations').click(function(){
         let advanced = document.getElementById("selectedAdvanced").value;
@@ -303,9 +357,31 @@ $("#modalAddRelation").ready(function(){
                 document.getElementById("prerequisite" + rel).value = "";
                 return false;
             }
+            //avoid symmetric relations
+            else if(checkSymmetric(prereq, advanced)){
+                alert("Cannot insert symmetric relation");
+                return false;
+            }
+            //avoid cycles
+            else if(checkCycle(prereq, advanced)){
+                alert("Cannot insert the relation '" + prereq + "' --> '" + advanced +"' because it will create a cycle");
+                return false;
+            }
             else {
                 // the relation is valid
-                let toInsert = {"sent": sent_id, "advanced": advanced, "prerequisite": prereq, "weight": weight};
+                let toInsert = {"sent": sent_id, "advanced": advanced, "prerequisite": prereq, "weight": weight,"advanced_id":target_scelto.getAttribute("concept_id")};
+
+                //check if already present
+                var already_present = JSON.stringify(insertedRelations).includes(JSON.stringify(toInsert));
+
+                //warning if the relation is transitive
+                //ask the user if he is sure
+                var confirmed = false;
+
+                if(isTransitive(prereq,advanced) && !already_present)
+                    confirmed = confirm('The relation "' + prereq + '" --> ' + ' "' + advanced + ' " is transitive, do you want to insert it? ');
+                else
+                    confirmed = true;
 
                 // check if already exists a inserted relation that only differs for the weight
                 var res = insertedRelations.reduce(function(acc, curr, index) {
@@ -324,14 +400,20 @@ $("#modalAddRelation").ready(function(){
                 }
                 // else, insert the full relation (if not previously inserted)
                 else {
-                    if (!JSON.stringify(insertedRelations).includes(JSON.stringify(toInsert))) {
+                    if (!already_present && confirmed) {
                         insertedRelations.push(toInsert);
+
+                        //icona sul target (se non già presente)
+                        if($(target_scelto).find("img").length == 0) {
+                            var icona = document.createElement("img");
+                            icona.src = '../static/images/transfer.svg';
+                            target_scelto.appendChild(icona);
+                        }
                     }
                 }
             }
         }
         renderHTML();
-        //console.log(insertedRelations);
     });
 });
 
@@ -340,7 +422,25 @@ $(document).on('click', '.btn_remove_full', function(){
     let rel_idx = this.id.split('_')[1];
     var ask = confirm("The relation will be removed! Press OK to confirm.");
     if (ask == true) {
+        var target = insertedRelations[rel_idx].advanced;
+        var target_id = insertedRelations[rel_idx].advanced_id;
+        var sentence = insertedRelations[rel_idx].sent;
+
+        console.log(insertedRelations[rel_idx]);
         insertedRelations.splice(rel_idx, 1);
+
+        //Se non ho altre relazioni con lo stesso target nella stessa frase rimuovo icona
+        var altra_rel = false;
+        for (let rel of insertedRelations){
+            if(rel['advanced'] == target && rel["sent"]== sentence ){
+                altra_rel = true;
+                break;
+            }
+        }
+
+        if(!altra_rel)
+            $('sent[sent_id='+sentence+']').find('concept[concept_id=' + target_id + ']').find('img').remove();
+
         renderHTML();
     }
 });
@@ -476,6 +576,7 @@ function autocomplete(inp, arr, pos=0) {
 
 function setCentralConcept(c) {
     centralConcept = c;
+    $('#conceptSummary').modal('show');
 }
 
 
@@ -515,7 +616,7 @@ function renderHTML(){
         let cell4 = row.insertCell(4);
         let cell5 = row.insertCell(5);
         let cell6 = row.insertCell(6);
-        cell0.innerHTML = '<input id="reopenRel_' + insertedRelations.indexOf(rel) + '" class="reopen_button" type="image" src="../static/images/eye-2288829_640.png" title="click to re-open the box with relations" />';
+        cell0.innerHTML = '<input id="reopenRel_' + insertedRelations.indexOf(rel) + '" class="reopen_button" type="image" src="../static/images/eye2.png" title="click to re-open the box with relations" />';
         cell1.innerHTML = insertedRelations.indexOf(rel).toString();
         cell2.innerHTML = rel["sent"];
         cell3.innerHTML = rel["prerequisite"];
@@ -575,6 +676,8 @@ function highlightText() {
     }
 
     $('concept').on('dblclick', function(e) {
+
+         target_scelto = this;
         //console.log("clicked a concept");
         //retieve concept
         // FIXME: check if the clicked concept belongs to a nested multiword
@@ -644,7 +747,7 @@ function addTerm() {
             var j = 1;
             while (j < tokens.length) {
                 var next = parseInt(x)+j;
-                let currLemma = $conll[next-1]["lemma"];
+                let currLemma = $conll[next]["lemma"];
                 if (next in candidatesToHighlight && candidatesToHighlight[next].toUpperCase() === currLemma.toUpperCase()) {
                     j++;
                 }
@@ -715,7 +818,7 @@ $('#modalAddRelation').on('show.bs.modal', function(e) {
         '                           <td>' + num_slots +
         '                           </td>' +
         '                           <td>' +
-        '                               <input type="text" name="name[]" id="prerequisite1" placeholder="Insert a prerequisite" class="form-control name_list autocomplete decrementable" required/>' +
+        '                               <input type="text" name="name[]" autocomplete="off" id="prerequisite1" placeholder="Insert a prerequisite" class="form-control name_list autocomplete decrementable" required/>' +
         '                           </td>' +
         '                           <td>' +
         '                                    <select class="form-control decrementable" id="weight1">' +
@@ -738,7 +841,7 @@ $('#modalAddRelation').on('show.bs.modal', function(e) {
                     '                        <td>' + num_slots +
                     '                        </td>' +
                     '                        <td>\n' +
-                    '                            <input type="text" name="name[]" id="prerequisite' + num_slots + '" placeholder="Insert a prerequisite" class="form-control name_list autocomplete decrementable" required/>\n' +
+                    '                            <input type="text" name="name[]" autocomplete="off" id="prerequisite' + num_slots + '" placeholder="Insert a prerequisite" class="form-control name_list autocomplete decrementable" required/>\n' +
                     '                        </td>\n' +
                     '                        <td>\n' +
                     '                            <div class="form-group">\n' +
@@ -766,13 +869,17 @@ $('#modalAddRelation').on('show.bs.modal', function(e) {
 
 });
 
+$("#show_save_modal").on('click', function (e) {
+    $("#save_modal").modal("show");
+});
+
 
 /**
  * Delete manual terms
  */
 $("#delete_concept").on('click', function (e) {
     $("#modalDeleteTerm").modal("show");
-    return false;
+    //return false;
 });
 
 $('#modalDeleteTerm').on('show.bs.modal', function(e) {
@@ -926,7 +1033,8 @@ var pnProductNavContents = document.getElementById("pnProductNavContents");
 pnProductNav.setAttribute("data-overflowing", determineOverflow(pnProductNavContents, pnProductNav));
 
 // Set the indicator
-moveIndicator(pnProductNav.querySelector("[aria-selected=\"true\"]"), "red");
+if(pnProductNav.querySelector("[aria-selected=\"true\"]") != null)
+    moveIndicator(pnProductNav.querySelector("[aria-selected=\"true\"]"), "red");
 
 // Handle the scroll of the horizontal container
 var last_known_scroll_position = 0;
@@ -1126,6 +1234,7 @@ function makeContextMenu() {
         });
 
         $(document).on("mousedown", function(e){
+            pageX = e.pageX;
             pageX = e.pageX;
             pageY = e.pageY;
         });
@@ -1349,6 +1458,17 @@ function uploadJSON(result){
         highlightText();
         //populate the full table of relations
         renderHTML();
+
+        //show icon on every target concept in the right sentence of the text
+        for (let rel of insertedRelations) {
+            var icona = document.createElement("img");
+            icona.src = '../static/images/transfer.svg';
+
+            $('sent[sent_id='+rel["sent"]+']').find('concept[concept_id=' + rel["advanced_id"] + ']').each(function (){
+                if($(this).find("img").length == 0)
+                    this.appendChild(icona)
+            });
+        }
     };
 
 function submit(){

@@ -1,6 +1,6 @@
 var i, j, node;
 // blank space between groups of nodes of the same section
-var groupSep = 30;
+var groupSep = 10;
 
 var nodeRadius = d3.scaleSqrt().range([3, 7]);
 
@@ -13,22 +13,27 @@ var margin = {
     left: nodeRadius.range()[1] + 1
 };
 
-var width = 1080 - margin.left - margin.right;
-var height = 720 - margin.top - margin.bottom;
+var width = 960 - margin.left - margin.right;
+var height = 400 - margin.top - margin.bottom;
 
-var x = d3.scaleLinear().range([0, width]);
+var x = d3.scaleLinear().range([0, width]);/*.domain(d3.extent($json.nodes, function (d) { return d; }));*/
 
-var svg = d3.select('svg')
+var div = d3.select("div.arc")
     .attr('width', width + margin.left + margin.right)
     .attr('height', height + margin.top + margin.bottom)
+
+var svg = div.append('svg')
+    .attr('width', width + margin.left + margin.right +500)
+    .attr('height', height+ margin.top + margin.bottom)
     .append('g')
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+document.getElementById("h33").textContent = "Text: " + $json.__comment__ ;
 
     var idToNode = {};
     var sectionsCount = 0;
     var connectedNodes = new Set();
-
+    console.log($json);
     $json.nodes.forEach(function (n) {
         idToNode[n.id] = n;
         // update the counter of sections
@@ -64,14 +69,12 @@ var svg = d3.select('svg')
         // fill the new cells:
         cell1.innerHTML = e.source.name;
         cell2.innerHTML = e.target.name;
-
         if (e.source.firstSection > e.target.firstSection) {
             cell3.innerHTML = 'backward';
         } else {
             cell3.innerHTML = 'forward';
         }
-
-        cell4.innerHTML = e.annotators.length;
+        cell4.innerHTML = e.weight;
     });
 
 
@@ -131,6 +134,7 @@ var svg = d3.select('svg')
             node.style('fill', null);
         });
 
+
     var node = svg.append('g')
         .attr('class', 'nodes')
         .selectAll('circle')
@@ -175,6 +179,7 @@ var svg = d3.select('svg')
         });
 
 
+
     node.append('title').text(function (d) { return d.name;});
     link.append('title').text(function (d) { return d.source.name + ' (' + d.source.firstSection + ')' +  ' --> ' + d.target.name  + ' (' + d.target.firstSection + ')';});
 
@@ -186,9 +191,11 @@ var svg = d3.select('svg')
     }
 
 
+
     /**
      * Section filter
      */
+
     //populate the list
     var sectionSelect = d3.select('#section-select');
     for (var x = 1; x <= sectionsCount; x++) {
@@ -196,51 +203,64 @@ var svg = d3.select('svg')
             .text(x);
     }
     d3.select('#section-select')
-        .on('click', function () {
+        .on('change', function () {
             var selection = this.value;
             //FIXME: is 'all' is selected show all sections!!!
             if (selection === "All") {
+            var paths = document.getElementsByClassName('links')[0].childNodes;
+            var circles = document.getElementsByClassName('nodes')[0].childNodes;
+            for (f=0; f<paths.length; f++) {
+                       paths[f].style.display = "block";
+                   }
+             for (c=0; c<circles.length; c++) {
+                       circles[c].style.display = "block";
+                   }
 
+            } else
+            {
+                $json.nodes.forEach(function (n) {
+
+                    if (connectedNodes.has(n.name)) {
+                        document.getElementById("node: " + n.name).style.display = 'block';
+                    } else {
+                        document.getElementById("node: " + n.name).style.display = 'none';
+                    }
+
+                    if (n.sections[0] === selection) {
+                        document.getElementById("node: " + n.name).style.display = 'block';
+                    } else {
+                        document.getElementById("node: " + n.name).style.display = 'none';
+                    }
+                });
+                $json.links.forEach(function (e) {
+                    if (e.source.sections[0] === selection &&
+                        e.target.sections[0] === selection) {
+                        document.getElementById('path: ' + e.source.name + ' --> ' + e.target.name).style.display = 'block';
+                        document.getElementById("node: " + e.source.name).style.display = "block";
+                        document.getElementById("node: " + e.target.name).style.display = "block";
+                    } else {
+                        document.getElementById('path: ' + e.source.name + ' --> ' + e.target.name).style.display = 'none';
+                        document.getElementById("node: " + e.source.name).style.display = "none";
+                        document.getElementById("node: " + e.target.name).style.display = "none";
+                    }
+                });
             }
-            $json.nodes.forEach(function (n) {
-                /*
-                if (connectedNodes.has(n.name)) {
-                    document.getElementById("node: " + n.name).style.display = 'block';
-                }
-                else {
-                    document.getElementById("node: " + n.name).style.display = 'none';
-                }
-                */
-                if (n.sections[0] === selection) {
-                    document.getElementById("node: " + n.name).style.display = 'block';
-                }
-                else {
-                    document.getElementById("node: " + n.name).style.display = 'none';
-                }
-            });
-            $json.links.forEach(function (e) {
-                if (e.source.sections[0] === selection ||
-                    e.target.sections[0] === selection) {
-                    document.getElementById('path: '+ e.source.name +' --> '+ e.target.name).style.display = 'block';
-                    document.getElementById("node: " + e.source.name).style.display = "block";
-                    document.getElementById("node: " + e.target.name).style.display = "block";
-                }
-                else {
-                    document.getElementById('path: '+ e.source.name +' --> '+ e.target.name).style.display = 'none';
-                    document.getElementById("node: " + e.source.name).style.display = "none";
-                    document.getElementById("node: " + e.target.name).style.display = "none";
-                }
-            });
+
         });
+
+
+
 
 
     /**
      * Direction filter
      */
     d3.select('#direction-select')
-        .on('click', function () {
+        .on('change', function () {
            var selection = this.value;
            var paths = document.getElementsByClassName('links')[0].childNodes;
+
+           console.log(paths);
            switch (selection) {
                case 'Backward':
                    for (var f=0; f<paths.length; f++) {
@@ -280,7 +300,9 @@ var svg = d3.select('svg')
             var paths = document.getElementsByClassName('links')[0].childNodes;
             if (text.length) {
                 for (var c=0; c<circles.length; c++) {
-                    if (!circles[c].id.includes(text.toUpperCase())) {
+                    console.log(circles[c].id);
+                    if (!circles[c].id.includes(text)) {
+
                         document.getElementById(circles[c].id).style.display = "none";
                     }
                     else {
@@ -289,7 +311,7 @@ var svg = d3.select('svg')
                 }
                 for (var p=0; p<paths.length; p++) {
                     //if (!paths[p].getElementsByTagName('title')[0].innerHTML.includes(text.toUpperCase())) {
-                    if (!paths[p].id.includes(text.toUpperCase())) {
+                    if (!paths[p].id.includes(text)) {
                         document.getElementById(paths[p].id).style.display = "none";
                         //d3.select("#" + paths[p].id).on('mouseover', function (d) { d.style("stroke", "white");})
                     }
@@ -357,6 +379,7 @@ function tableSearch() {
 function sortTable(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
     table = document.getElementById("relationsTable");
+    console.log(table);
     switching = true;
     // Set the sorting direction to ascending:
     dir = "asc";
@@ -409,3 +432,17 @@ function sortTable(n) {
         }
     }
 }
+
+function download(content, fileName, contentType) {
+    const a = document.createElement("a");
+    const file = new Blob([content], { type: contentType });
+    a.href = URL.createObjectURL(file);
+    a.download = fileName;
+    a.click();
+        }
+
+        function onDownload(){
+    download(JSON.stringify($json), "Graph_Structure.json", "text/plain");
+        }
+
+

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+<body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-10 col-md-8 col-lg-6 mx-auto">
+              <div class="card card-signin my-5" style="background-color:rgb(255,255,255,0.9)">
+                <div class="card-body">
+                     <div style="font-size:14px">
+                        <h3>Revise your annotations</h3>
+                         The annotation revision process allows you to double-check the pairs you created during your text annotation phase. You can either confirm, delete or modify the weight of the pairs.
+                    </div><br>
+                    <h5 class="card-title text-center">Select the annotation to review</h5>
+                        <div class="form-group">
+                        {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+{% endblock %}

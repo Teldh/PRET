@@ -1,4 +1,25 @@
 svg {
     height: -webkit-fill-available;
     width: 100%;
+
+.filters label {
+    display:inline-block;
+    width:20px
+}
+
+.filters select {
+    display:inline-block;
+    position:relative;
+    width:100px;
+    bottom:2px;
+    margin-bottom:4px
+}
+
+}
+button {
+    padding: 5px 5px;
+    position:relative;
+    top:-50px;
+    left:950px;
+
 }

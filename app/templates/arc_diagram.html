@@ -11,10 +11,11 @@
 
             <div class="filters">
                 <div>
-                    <label for="text-select">Text:</label>
-                    <select id="text-select">
-                        <option value="NAI">Networking and the Internet (chapter 4)</option>
-                    </select>
+                    <h3 id="h33" >Text:</h3>
+                </div>
+                <div class="arc">
+
+
                 </div>
 
                 <div>
@@ -37,9 +38,10 @@
                     <input id="text-search" placeholder="Search a concept..." style="width: 120px"/>
                 </div>
 
-                <div>
-                    <a href="#relationsTable">Go to the full list of relations <i class="icon-download"></i></a>
+                <div class='button'>
+               <button onclick="onDownload()">Download Graph Structure</button>
                 </div>
+
             </div>
 
             <svg></svg>
@@ -47,7 +49,7 @@
             <br>
 
             <h1>Table of All Prerequisite Relations</h1>
-            <p><button onclick="showList()">Show / Hide</button></p>
+            <p><button id="buttonShow" onclick="showList()">Show / Hide</button></p>
             <div id="summary">
 
                 <input type="text" id="myInput" onkeyup="tableSearch()" placeholder="Search a concept...">
@@ -61,7 +63,7 @@
                         <th onclick="sortTable(0)">Prerequisite</th>
                         <th onclick="sortTable(1)">Subsidiary</th>
                         <th onclick="sortTable(2)">Direction</th>
-                        <th onclick="sortTable(4)">Agreement</th>
+                        <th onclick="sortTable(3)">Weight</th>
                     </tr>
                 </table>
             </div>

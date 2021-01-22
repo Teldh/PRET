@@ -2,7 +2,10 @@
 {% block content %}
         <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
         <!-- SWITCH ACCORDING TO ONLINE/LOCAL LOCATION OF THE JS -->
-         <script src="http://d3js.org/d3.v2.min.js" charset="utf-8"></script>
+        <!--<script src="http://d3js.org/d3.v2.min.js" charset="utf-8"></script>-->
+         <script src="https://d3js.org/d3.v2.js"></script>
+         <script src="../static/d3.v2.min.js"></script>
+
         <!--
         <script src="../../Prerequisite_Annotation_Tool/d3.v2.min.js" charset="utf-8"></script>
         -->
@@ -14,15 +17,13 @@
             <header>
                 <h1>Matrix of prerequisite relationship between concepts</h1>
             </header>
+            <h3 id="h33" >Text:</h3>
 
             <p>
-            Relations inserted by annotators. Choose how to order the matrix by selecting a possible choise in the dropdown menu.<br>
-            In all configurations the intensity of color represents the agreement degree among annotators.<br>
-            Different shades of colors suggest different clusters in the graph, as detected by a community detection algorithm.
-            </p>
 
-            <br>
-            <br>
+
+            Choose how to order the matrix by selecting a possible choise in the dropdown menu.<br>
+            </p>
 
             <div class="filters">
                 <label for="order">Order by:</label>
@@ -34,9 +35,29 @@
                         <!-- TODO uncomment the next line when the JS script is implemented
                         <option value="co_occurrance">number of sections in which they co-occurs</option>
                         -->
-                        <option value="agreement">annotators' agreement</option>
                     </select>
             </div>
+            <div class="filters">
+                <label for="colored">Colored by:</label>
+                    <select id="colored">
+                         <option value="normal">None</option>
+                        <option value="weight">Weight</option>
+                    </select>
+            </div>
+            <div class='my-legend'>
+                <div class='legend-title'>Weight</div>
+                    <div class='legend-scale'>
+                        <ul class='legend-labels'>
+                            <li><span style='background:red;'></span>Strong Relation</li>
+                            <li><span style='background:green;'></span>Weak Relation</li>
+                        </ul>
+                    </div>
+
+            </div>
+           <div class='button'>
+               <button onclick="onDownload()">Download Graph Structure</button>
+           </div>
+
         </div>
         
 

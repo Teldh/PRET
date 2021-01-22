@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+<body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+              <div class="card card-signin my-5" style="background-color:rgb(255,255,255,0.9)">
+                <div class="card-body">
+                    <h3>Download CoNLL</h3>
+                    <div style="font-size:14px">
+                        Select a text to download a txt file with the CoNLL format.
+                    </div>
+                    <br>
+                    <h5 class="card-title text-center">Select a text to download</h5>
+                      <div class="form-group">
+                            <form action="" id="form" method="post" class="form" role="form">
+                              {{ form.csrf_token }}
+                              <div class="form-group ">
+                                  {{ form.book_cap.label (class_='control-label')}}
+                                  {{ form.book_cap(class_='form-control')}}
+                              </div>
+
+                                 <input class="btn btn-primary" id="submit" name="submit" type="submit" value="Download">
+
+
+                            </form>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <script type="text/javascript">
+           function showModal() {
+                $("#confirmDeletion").modal("show");
+           }
+
+           $('#confirmDeletion').on('show.bs.modal', function() {
+               var e = document.getElementById("book_cap");
+               var libro = e.options[e.selectedIndex].text;
+               document.getElementById("book_to_delete").innerHTML = "You are about to delete<br><br>" + libro
+                   + "<br><br>" +"All the annotations will be erased. Are you sure?";
+
+           });
+        </script>
+{% endblock %}

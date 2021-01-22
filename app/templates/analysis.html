@@ -2,54 +2,223 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
 <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
-        <div class="container">
+
+      <div class="container" style="margin-top:0.5rem;">
+        <div class="row" >
+            <div class="col-sm-11 col-md-9 col-lg-7 mx-auto"style="background-color:rgb(255,255,255,0.9);border-radius:4px;margin-bottom: 1rem;">
+                    <div class="card-body">
+                        <div style="font-size:14px">
+                        <h3>Analysis</h3>
+                        This module provides tools to analyze gold standards, specific annotations, or the output of automatic methods for prerequisite extraction.
+                        <!--<br><br>You are provided with:
+                                        <ol>
+                                            <br>
+                                            <li><span style="font-weight: bold;">Data Summary:</span> quantitative analysis of concepts and relations;</li>
+                                            <li><span style="font-weight: bold;">Linguistic Analysis:</span> the underlying linguistic context of relations;</li>
+                                            <li><span style="font-weight: bold;">Agreement Computing:</span> agreement rate between annotated datasets.</li>
+                                            <li><span style="font-weight: bold;">Fleiss's kappa:</span> </li>
+                                        </ol>
+                            <br>-->
+                        </div><br>
+
+                        <h5 class="card-title text-center">Select an annotation or a method and the type of analysis</h5>
+                          <div class="form-group">
+                            {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
+                          </div>
+                    </div>
+
+            </div>
+            </div>
+        </div>
+      </div>
+
+        <!--<div class="container">
           <div class="row">
             <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
               <div class="card card-signin my-5" style="background-color:rgb(255,255,255,0.9)">
                 <div class="card-body">
                     <h5 class="card-title text-center">Select an annotation or a method and the type of analysis</h5>
                       <div class="form-group">
-                        {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
+                        
                   </div>
                 </div>
             </div>
           </div>
-        </div>
+        </div>-->
         
         <script type="text/javascript">
-            let book_select = document.getElementById('book_cap')
-            let analysis_select = document.getElementById('analysis_type')
-            let annotation_select1 = document.getElementById('annotation_1')
-            let annotation_select2 = document.getElementById('annotation_2')
-            
+            let book_select = document.getElementById('book_cap');
+            let analysis_select = document.getElementById('analysis_type');
+            let annotation_select1 = document.getElementById('annotation_1');
+            let annotation_select2 = document.getElementById('annotation_2');
+            const metodi = ['1', '2', '3','4','5','6'];
             annotation_select2.disabled=true;
-        
+
+            var label_annotation2 = $('label[for="annotation_2"]')[0];
+
+            if(metodi.includes(annotation_select1.value)){
+                only_gold_selectable()
+            }
+
+            //se cambio il testo devo cambiare le annotazioni
+            //In data summary annotation2 deve essere abilitato solo se è annotation1 è un metodo
+
             book_select.onchange = function() {
-                
-                book_cap = book_select.value;
-                fetch('/analysis/' + book_cap).then(function(response) {
-                    response.json().then(function(data) {
-                         
-                        let optionHTML = '';
-                        
-                        data.annotation.forEach(function(annotation){
-                        console.log(annotation.id)
-                            optionHTML += '<option value="' + annotation.id + '">' + annotation.name + '</option>';
-                        })
-                        annotation_select1.innerHTML = optionHTML;
-                        annotation_select2.innerHTML = optionHTML;
-                    });
-                });
-            }
-            
+                setup();
+            };
+
+            //se seleziono un metodo in data summary devo selezionare anche una gold
+            annotation_select1.onchange = function(){
+
+                //selezione gold
+                if(metodi.includes(annotation_select1.value) && analysis_select.value == '1'){
+                    only_gold_selectable()
+                }else{
+                    if(analysis_select.value != '3')
+                        annotation_select2.disabled=true;
+
+                    if(label_annotation2.innerHTML== "Gold"){
+                        label_annotation2.innerHTML = "Annotation/Method";
+                        annotation_select2.options[0].innerHTML = "Choose an annotation or a method";
+                    }
+                }
+
+            };
+
+            //se cambio il tipo di analisi
             analysis_select.onchange = function() {
-            
-            if (analysis_select.value == '3') {
-                annotation_select2.disabled=false;
-            } else {
-                annotation_select2.disabled=true;
-            }   
-           
+                setup();
+            };
+
+            function setup(){
+                //Agreement: si deve fare solo tra due annotatori
+                if(analysis_select.value == '3') {
+                    only_annotations_selectable();
+                    annotation_select2.disabled=false;
+                    annotation_select1.disabled=false;
+                    if (label_annotation2.innerHTML == "Gold") {
+                        label_annotation2.innerHTML = "Annotation/Method";
+                        annotation_select2.options[0].innerHTML = "Choose an annotation or a method";
+                    }
+                }
+                //Linguistic analysis: si puo scegliere solo le annotazioni e le gold
+                else if(analysis_select.value== '2'){
+                    linguistic();
+                    annotation_select1.disabled=false;
+                    if (label_annotation2.innerHTML == "Gold") {
+                        label_annotation2.innerHTML = "Annotation/Method";
+                        annotation_select2.options[0].innerHTML = "Choose an annotation or a method";
+                    }
+                    annotation_select2.disabled=true;
+                }
+                else if(analysis_select.value== '4'){
+                    annotation_select2.options[0].innerHTML = "Choose an annotation or a method";
+                    annotation_select1.options[0].innerHTML = "Choose an annotation or a method";
+                    annotation_select2.disabled=true;
+                    annotation_select1.disabled=true;
+                }
+                //Data summary: tutti i tipi di annotazione (manuale/gold/metodo) e annotation2 disabilitata
+                else{
+                    annotation_select2.disabled=true;
+                    annotation_select1.disabled=false;
+
+                    get_all_options();
+
+                    if(annotation_select1.innerHTML.startsWith('<option value="uid') && analysis_select.value != '3'){
+                        label_annotation2.innerHTML = "Annotation/Method";
+                        annotation_select2.disabled=true;
+                    }
+
+                }
+
+
             }
+
+            function get_all_options(){
+                book_cap = book_select.value;
+                    fetch('/analysis/' + book_cap).then(function(response) {
+                        response.json().then(function(data) {
+                            let optionHTML = '';
+                            let optionHTML2 = '<option value="Default"> Choose an annotation or a method</option> ';
+                            data.annotation.forEach(function(annotation){
+                                optionHTML += '<option value="' + annotation.id + '">' + annotation.name.charAt(0).toUpperCase() + annotation.name.slice(1) + '</option>';
+                            });
+                            annotation_select1.innerHTML = optionHTML;
+                            annotation_select2.innerHTML = optionHTML2 + optionHTML;
+                        });
+                    });
+            }
+
+            function only_gold_selectable(){
+                //in annotation 2 metto solo le gold
+
+                annotation_select2.disabled=false;
+
+                label_annotation2.innerHTML= "Gold";
+
+                book_cap = book_select.value;
+                    fetch('/analysis/' + book_cap).then(function(response) {
+                        response.json().then(function(data) {
+                            let optionHTML = '';
+
+                            data.annotation.forEach(function(annotation){
+                                if(typeof(annotation.id) == 'string' && annotation.id.startsWith("gold"))
+                                    optionHTML += '<option value="' + annotation.id + '">' + annotation.name.charAt(0).toUpperCase() + annotation.name.slice(1) + '</option>';
+                            });
+
+                            annotation_select2.innerHTML = optionHTML;
+                        });
+                    });
+
+            }
+
+            function only_annotations_selectable(){
+                // entrambi i campi con solo le annotazioni di utenti
+
+                annotation_select2.disabled=false;
+
+                book_cap = book_select.value;
+                    fetch('/analysis/' + book_cap).then(function(response) {
+                        response.json().then(function(data) {
+                            let optionHTML = '';
+
+                            data.annotation.forEach(function(annotation){
+                                if(typeof(annotation.id) == 'string' && annotation.id.startsWith("uid"))
+                                    optionHTML += '<option value="' + annotation.id + '">' + annotation.name.charAt(0).toUpperCase() + annotation.name.slice(1) + '</option>';
+                            });
+
+                            annotation_select1.innerHTML = optionHTML;
+                            annotation_select2.innerHTML = optionHTML;
+                        });
+                    });
+
+
+
+            }
+
+            function linguistic(){
+                // primo campo sia con gold che annotazioni, solo metodo2
+                annotation_select2.disabled=true;
+                
+
+                book_cap = book_select.value;
+                    fetch('/analysis/' + book_cap).then(function(response) {
+                        response.json().then(function(data) {
+                            let optionHTML = '';
+
+                            data.annotation.forEach(function(annotation){
+
+                                if(typeof(annotation.id) == 'string' && (annotation.id.startsWith("uid") || annotation.id.startsWith("gold") )|| annotation.id == 2)
+                                    optionHTML += '<option value="' + annotation.id + '">' + annotation.name.charAt(0).toUpperCase() + annotation.name.slice(1) + '</option>';
+                            });
+
+                            annotation_select1.innerHTML = optionHTML;
+                        });
+                    });
+
+
+
+            }
+
         </script>
 {% endblock %}

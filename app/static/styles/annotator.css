@@ -325,9 +325,19 @@ chapterTitle, sectionTitle, subsectionTitle {
 }
 
 .reopen_button {
-    width: 45px;
+    width: 40px;
 }
 
 #recycle-container {
     text-align: center;
+}
+
+.automatic_concept > img{
+    width: 13px;
+    vertical-align: top;
+}
+
+.manual_concept > img{
+    width: 13px;
+    vertical-align: top;
 }

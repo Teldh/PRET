@@ -1,0 +1,38 @@
+{% block content %}
+   <!-- <title>Guidelines for annotators</title> -->
+    <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+        <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" /> -->
+            <!-- Add icon library -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+    <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;max-width: 1135px;margin-bottom:3rem;padding:15px">
+
+        <header class="page-header">
+            <h3>Visualization Description</h3>
+        </header>
+
+
+        <span style="font-weight: bold;">1. Matrix:</span><br>
+        asymmetric adjacency matrix where each cell represents a prerequisite relation between two concepts. Cells are coloured in order to visually distinguish strong and weak relations. The matrix arrangement is dynamic, i.e. the concepts along the axes can be sorted according to different criteria: order of first appearance in the text, alphabetical order, frequency and agreement rate (i.e., number of annotators that created that pair).
+
+        <br><br><span style="font-weight: bold;">2. Arc Diagram:</span><br>
+        a special kind of network graph constituted by nodes that represent concepts and links that show relationships between concepts. In arc diagrams, nodes are displayed along a single axis and links are represented with arcs.
+
+        <br><br><span style="font-weight: bold;">3. Simple Graph:</span><br>
+        network-like representation of the selected dataset: concepts are nodes in the graph while edges represent prerequisite relations.
+        <br><br><span style="font-weight: bold;">4. Bezier Graph:</span><br>..
+
+        <br><br><span style="font-weight: bold;">5. Gantt graph:</span><br> Available only for temporal patterns method.
+
+
+
+    </div>
+{% endblock %}

@@ -3,19 +3,122 @@
 {% block content %}
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/annotation.css') }}">
 <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+<style>
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 10px;
+  height: 10px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
 
-<div class="container">
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+<div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:0.5rem;border-radius:4px;max-width: 1135px;padding:15px">
+    <h3>Terminology Upload</h3>
+    <p style="font-size: 16px;">
+        A terminology is a list of words (or multi-words) that are relevant for a given context and domain. We can learn a lot about a text from its terminology: its topic, its intended audience, its most relevant  concepts.
+
+        In this page you can upload a file containing the most relevant terms of your textbook/chapter. You can create your terminology either manually with the help of domain experts or using a tool for automatic term extraction. It’s up to you!
+        <br><br>
+        REQUIREMENTS:
+        <ul>
+            <li>one term for each line of your file;</li>
+            <li>for each term, its lemma (i.e. its canonical form). For example, ‘dog’ for ‘dogs’, ‘to be’ for ‘is’);</li>
+            <li>terms in the list should appear in the corpus.</li>
+        </ul>
+        The tool will search for all the occurrences of each term in the text and will show them as concepts to annotate.
+
+    </p>
+
+    </div>
+<div class="container" style=" margin-top:0.5rem;max-width: 1135px;padding:15px">
     <div class="row">
-        <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
-          <div class="card card-signin my-5" style="background-color:rgb(255,255,255,0.9)">
-            <div class="card-body">
-                <h5 class="card-title text-center">Select a text in the form of a list of word</h5>
-                  <div class="form-group">
-                      {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
-                  </div>
+        <div class="col" style="background-color:rgb(255,255,255,0.9);border-radius:4px">
+            <div class="card-body" >
+                    <h5 class="card-title text-center">Upload a Terminology (not mandatory)</h5><br>
+                      <div class="form-group">
+                          {{ wtf.quick_form(form, button_map={'submit': 'primary'},id="form") }}
+                      </div>
             </div>
         </div>
+        <div class="col" style="background-color:rgb(255,255,255,0.9);margin-left:50px;border-radius:4px;height:400px;overflow:auto;">
+            <div class="card-body">
+              <h5 class="card-title text-center"> Uploaded texts </h5><br>
+
+                <div style="height:300px;overflow-y: auto;">
+                  <table class="table table-bordered" id="table">
+                  <thead style="background:#eee; position: sticky; top: 0;">
+                    <tr style="background:#eee; position: sticky; top: 0;">
+                    <th style="background:#eee; position: sticky; top: 0;">Title</th>
+                    <th style="background:#eee; position: sticky; top: 0;">Chapter</th>
+                    <th style="background:#eee; position: sticky; top: 0;">Terminology</th>
+                    </tr>
+                  </thead>
+                    {% for book in file['books'] %}
+                    <tr>
+                        <td> {{ book.title }}</td>
+                        <td> {{ book.cap}}</td>
+                        {% if book.status == 'ready' %}
+                        <td id="{{book.bid}},{{book.cap}}">  Not uploaded </td>
+                        {% elif book.status =='running' %}
+                         <td>
+                             <div class="row" style="margin-right:0;">
+                                 <div class="col-5">
+                                     Uploading
+                                 </div>
+                                 <div class="col-1">
+                                     <div class="loader"></div>
+                                 </div>
+                             </div>
+                         </td>
+                        {% elif book.status =='succeeded' %}
+                            <td> Uploaded</td>
+                         {% else %}
+                        <td id="{{book.bid}},{{book.cap}}"> {{ book.status.capitalize() }}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+
+                  </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+        <script type="text/javascript">
+            let submit_button = document.getElementById('submit')
+            let book_select = document.getElementById('book_cap')
+
+            $("#form").submit(function(event){
+                book_cap = book_select.value;
+                document.getElementById(book_cap).innerHTML = "<td>\n" +
+                    "                             <div class=\"row\" style=\"margin-right:0;\">\n" +
+                    "                                 <div class=\"col-5\">\n" +
+                    "                                     Uploading\n" +
+                    "                                 </div>\n" +
+                    "                                 <div class=\"col-1\">\n" +
+                    "                                     <div class=\"loader\"></div>\n" +
+                    "                                 </div>\n" +
+                    "                             </div>\n" +
+                    "                         </td>";
+            });
+
+
+        </script>
+
 
 <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>   
 {% endblock %}

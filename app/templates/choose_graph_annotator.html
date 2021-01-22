@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+        <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+    <title>Graph</title>
+
+    <script src="https://d3js.org/d3.v3.js"></script>
+    <script src="../static/jsnetworkx.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../static/styles/simple_graph.css">
+
+    <div id="canvas" style="background-color: rgb(255,255,255,0.9);margin:3rem;border-radius:4px;padding:15px;">
+    <div class="container">
+            <header class="page-header">
+                <h1>Choose Graph</h1>
+            </header>
+            <div class="filters">
+                <div>
+                    <input type="button" value="Bezier graph" onclick="window.location.href='bezier_graph_annotator';"/>
+                    <input type="button" value="Simple graph" onclick="window.location.href='simple_graph_annotator';"/>
+                </div>
+            </div>
+
+
+    <div id="Analysis"></div>
+
+    </div>
+
+    <script type="text/javascript">
+             var $json = {{ file|tojson }}
+             console.log($json);
+             localStorage.setItem('testObject', $json);
+    </script>
+    </div>
+    </div>
+{% endblock %}

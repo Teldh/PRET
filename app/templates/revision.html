@@ -1,0 +1,146 @@
+<link rel="stylesheet" type="text/css" href='../static/styles/revision.css'/>
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+<body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+        <div id="alert_success" class="alert alert-success" style="display:none;" role="alert">
+            Revision added to the database!
+        </div>
+        <div id="alert_fail" class="alert alert-danger" style="display:none;" role="alert">
+            Something went wrong
+        </div>
+
+        <div id="alert_warning" class="alert alert-warning" style="display:none;"  role="alert">
+          Partial revision saved
+        </div>
+        <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;max-width: 1135px;margin-bottom:3rem;padding:15px">
+
+            <div class="row">
+                <div class="col-sm ">
+                    <h2>Relations</h2>
+                        <a href="" target="_blank"onclick="open_description();">Read revision and tag labels description</a>
+                    <br>
+                    <div style="height:600px;overflow:auto;">
+                    <br>
+                    <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="check_uniques" onclick="filtra()">
+                          <label class="form-check-label" for="defaultCheck1">
+                            Show only unique relations
+                          </label>
+                      </div>
+                      <br>
+                     <table class="table table-bordered" id="table">
+                        <tr>
+                            <th>Prerequisite</th>
+                            <th>Target</th>
+                            <th>Weight</th>
+                            <th> Revision</th>
+                            <th> Tag</th>
+                        </tr>
+
+                        {% for rel in file['rels'] %}
+                        <tr class='clickable-row {{ rel.revised_value }} {% if not rel.is_unique %}not_unique{% endif %}' id = {{ rel.phrase }}>
+                            <td>{{ rel.prereq}}</td>
+                            <td>{{ rel.target }}</td>
+                            <td id ="weight_{{ rel.id }}">{{ rel.weight }}</td>
+                            <td>
+                                <select class="revision_values" id="rev_{{ rel.id }}" onchange="changeOptions(this);">
+                                {%  if rel.revised_value != 'None' %}
+                                    {% for opt in file['options'] %}
+                                        <option value="{{ opt }}"{% if opt == rel.revised_value %} selected {% endif %}>{{ opt }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                        <option value="None">None</option>
+                                        <option value="Confirm">Confirm</option>
+                                        <option value="Delete">Delete</option>
+                                        <option value="Change weight">Change weight</option>
+                                {%  endif %}
+                                </select>
+                            </td>
+                            <td>
+                                <select class="tag_values" id="tag_{{ rel.id }}">
+                                    {% if rel.revised_value == "Confirm" %}
+                                        <option value="None">None</option>
+                                        {% for opt in file['confirm_tags'] %}
+                                            <option value="{{ opt }}"{% if opt == rel.tag_value %} selected {% endif %}>{{ opt }}</option>
+                                        {% endfor %}
+                                    {% elif rel.revised_value == 'Delete' %}
+                                        <option value="None">None</option>
+                                        {% for opt in file['delete_tags'] %}
+                                            <option value="{{ opt }}"{% if opt == rel.tag_value %} selected {% endif %}>{{ opt }}</option>
+                                        {% endfor %}
+                                    {% elif rel.revised_value == "Change weight" %}
+                                        <option value="{{rel.tag_value}}">{{rel.tag_value}}</option>
+                                    {% else %}
+                                        <option value="None">None</option>
+                                    {% endif %}
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <h2> Text </h2>
+                    <div class="panel panel-primary" style="border:2px solid;border-color:#2B67D2">
+                        <div class="panel-heading" style="background-color:#2B67D2;padding:8px"><img src="../static/images/icons8-documento.svg" width="20"></div>
+                        <div class="panel-body overflow-auto" id="testo" style="padding:4px;height:600px"></div>
+                    </div>
+                </div>
+            </div>
+        <button type="button" class="btn btn-primary" onclick="submitRevision(this)">Save Revision</button>
+        </div>
+
+
+<script type="text/javascript">
+    var $tagged = {{ file.text|tojson }}
+    var $bid = {{ file.bid|tojson }}
+    var $cap = {{ file.cap|tojson }}
+
+// on click delle row -> hightlight della frase nel testo e scroll alla frase
+lastClicked = null;
+
+jQuery(document).ready(function($) {
+    $(".clickable-row").click(function() {
+
+        if(lastClicked != null)
+            lastClicked.css("background-color", "transparent");
+
+        id = "sent_id_"+ this.id;
+
+        //scroll
+        testo = $(document.getElementById("testo"));
+        testo.animate({
+               scrollTop: testo.scrollTop() - testo.offset().top + $(document.getElementById(id)).offset().top
+         }, 'slow');
+
+        //highlight sentence
+        $(document.getElementById(id)).css("background-color", "yellow");
+
+        lastClicked = $(document.getElementById(id));
+    });
+});
+    function filtra(){
+        var checkBox = document.getElementById("check_uniques");
+
+        var table = document.getElementById("table");
+
+        var rels_uniche = document.getElementsByClassName("not_unique");
+
+        for (var i = 0; i < rels_uniche.length; i++) {
+
+            if( checkBox.checked == true)
+                rels_uniche[i].style.display = "none";
+            else
+                rels_uniche[i].style.display = "";
+
+
+        }
+    }
+function open_description() {
+            window.open("{{ url_for('revision_description') }}");
+        }
+</script>
+    <script src="../static/revision.js"></script>
+{% endblock %}

@@ -1,4 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
+    <style>
+    .alert-dismissible{
+        background-color: #d4edda;
+    }
+    </style>
 <body style="background-image: url('../static/images/wallpaper_index_white.jpeg');background-attachment:fixed;background-repeat:no-repeat;background-size:cover"></body>
+    <div class="container" style="margin-top:3%;margin-left:3%;margin-right:40%;">
+        <div class="col-sm-10 col-md-8 col-lg-6 position-absolute "style="background-color:rgb(255,255,255,0.9);border-radius:4px;margin-bottom: 1rem;">
+         <br>
+            <h3>PRET</h3>
+        Welcome on PRET annotation tool, the first online tool designed to support prerequisite relation annotation on textbooks.
+                <br><br><span style="font-weight: bold;">Create a Dataset Annotated with Prerequisite Relations</span><br>
+        Thanks to PRET you can upload a corpus (a text) and annotate prerequisite relations between concepts described in the text to create an annotated dataset.
+                <br><br><span style="font-weight: bold;">PRET is Collaborative!</span><br>
+        Ask your annotators to use PRET and collect as many annotations as you need. Then, you can compare and combine the annotations to obtain a manually labelled text to use as ground truth for your analyses.
+                <br><br><span style="font-weight: bold;">Challenge your Annotation</span><br>
+        Try different automatic prerequisite identification methods implemented in PRET and compare the results with your ground truth.
+                <br><br><span style="font-weight: bold;">Explore the Labelled Text</span><br>
+        PRET offers a suite of tools to analyse and compare the annotations and the output of extraction methods. You can also visualise the relations using different visualisation options.
+                <br><br><span style="font-weight: bold;">Collaborate with us on the extraction of prerequisite relations!</span><br>
+        If you developed a prerequisite extraction method, contact us, we’ll integrate your method and you’ll be able to use the PRET tool to evaluate it against  ground truth and other methods,
+        Log In to start using PRET Annotation Tool
+        </div>
+    </div>
 {% endblock %}

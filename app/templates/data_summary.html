@@ -1,11 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-
+<style>
+th{
+    width:50%;
+}
+</style>
 <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;padding:15px;margin-bottom:3rem">
 
     <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
-    <h1>Data Summary:</h1>
+    <h1>Data Summary</h1>
+    {% if gid is defined %}
+    <div style="float:right;">
+        <a href="/download_burst_summary/{{ bid }},{{ cap }},{{ gid }},{{ accuracy }},{{ precision }},{{ recall }},{{ F1 }}" >
+            <button class="btn btn-primary">Download summary</button>
+        </a>
+    </div>
     <br>
+    {% endif %}
+    <br>
+    <h4> Textbook Info: </h4>
     <table class="table table-bordered">
         <tr>
             <th scope="row">Text Length (sentences)</th>
@@ -16,7 +29,10 @@
             <th scope="row">Text Length (tokens)</th>
             <td>{{ file['tokens']|tojson }}</td>
         </tr>
-        
+    </table>
+    <br>
+    <h4> Concepts and Relations: </h4>
+    <table class="table table-bordered">
         <tr>
             <th scope="row">Number of relations</th>
             <td>{{ file['links']|tojson }}</td>
@@ -63,10 +79,13 @@
             <td>{% if file['entered concepts'] is defined %}
                  {{ file['entered concepts']|tojson }}
              {% else %}
-                 aaa
+                 0
             {% endif %}</td>
         </tr>
-        
+    </table>
+    <br>
+     <h4>Concept Map Info:</h4>
+    <table class="table table-bordered">
         <tr>
             <th scope="row">Number of transitive relations</th>
             <td>{{ file['transitive']|tojson }}</td>
@@ -74,7 +93,7 @@
         
         <tr>
             <th scope="row">Number of cycles</th>
-            <td>{{ file['loops']|tojson }}</td>
+            <td>{{ file['loops']}}</td>
         </tr>
         
         <tr>
@@ -94,7 +113,11 @@
         
         <tr>
             <th scope="row">Longest path</th>
-            <td>aaa</td>
+            {% if file['logest_path_root'] == "Cycle" %}
+                <td> Cycle </td>
+            {% else %}
+                <td>from: "{{ file['logest_path_root'] }}" to: "{{ file['logest_path_leaf'] }}", lenght: {{ file['logest_path_lenght'] }} </td>
+            {% endif %}
         </tr>
         
         <tr>
@@ -104,8 +127,26 @@
         
         <tr>
             <th scope="row">Number of roots</th>
-            <td>aaa</td>
+             <td>{{ file['roots'] }}</td>
         </tr>
+        {% if accuracy is defined %}
+           <tr>
+               <th scope="row">Accuracy</th>
+               <td>{{ accuracy }}</td>
+           </tr>
+            <tr>
+               <th scope="row">Precision</th>
+               <td>{{precision}}</td>
+           </tr>
+            <tr>
+               <th scope="row"> Recall </th>
+               <td> {{ recall }}</td>
+           </tr>
+            <tr>
+               <th scope="row">F1-score</th>
+               <td>{{F1}}</td>
+           </tr>
+        {% endif %}
     </table>
     
 </div>

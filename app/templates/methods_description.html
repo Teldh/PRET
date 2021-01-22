@@ -1,0 +1,33 @@
+{% block content %}
+   <!-- <title>Guidelines for annotators</title> -->
+    <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+        <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" /> -->
+            <!-- Add icon library -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+    <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;max-width: 1135px;margin-bottom:3rem;padding:15px">
+
+        <header class="page-header">
+            <h3>Methods Description</h3>
+        </header>
+
+
+        <span style="font-weight: bold;">1. Lexical Relations</span><br> A prerequisite relation is identified between concepts showing a lexical relation such as hypernyms-hyponyms and holonyms-meronyms determined using Wordnet (<a href="https://wordnet.princeton.edu/">link</a>).
+        <br><br><span style="font-weight: bold;">2. Lexical Syntactic Pattern Match:</span><br> A prerequisite is identified between two concepts appearing in one of the linguistic patterns defined in (<a href="https://dl.acm.org/doi/pdf/10.1145/2983323.2983725">Wang et al, 2016</a>).
+        <br><br><span style="font-weight: bold;">3. Relational Metric:</span><br>This method exploits the Ref-D metric (<a href="https://www.aclweb.org/anthology/D15-1193.pdf">Liang et al. 2015</a>) for prerequisite relation identification which computes the associative strength of two concepts.
+        <br><br><span style="font-weight: bold;">4. Wikipedia-based relations:</span><br>The method based on Wikipedia pages, described in (<a href="https://dl.acm.org/doi/pdf/10.1145/2983323.2983725">Wang et al, 2016</a>), extracts domain key concepts from educational resources and then identifies prerequisite relationships between them. The key concept extraction exploits Wikipedia to construct a domain dictionary in which each concept is the title of a Wikipedia Page. Prerequisite relation identification occurs through different metrics (including Usage in Definition, Content Similarity, Learning Level).
+        <br><br><span style="font-weight: bold;">5. Textbook Structure:</span><br>  TOC (Table of Content) distance between two concepts, described in (<a href="https://dl.acm.org/doi/pdf/10.1145/2983323.2983725">Wang et al, 2016</a>), computes the relation strength between the concepts as the distance between the subchapter numbers where they appear.
+        <br><br><span style="font-weight: bold;">6. Temporal Patterns:</span><br>This method is based on Burst Analysis to identify relevant portions of texts (burst intervals) for each concept and then exploits temporal patterns between burst intervals to find concept pairs showing a prerequisite relation, as described in (<a href="https://link.springer.com/chapter/10.1007/978-3-030-23204-7_1">Adorni et al. 2019</a>).
+
+
+
+    </div>
+{% endblock %}

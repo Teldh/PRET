@@ -17,7 +17,10 @@ import re, math
 from collections import Counter
 import app
 from app import app, db
-from app.models import Baseline_Methods
+from app.models import Baseline_Methods, Bs_status
+import sys
+from time import sleep
+import requests
 
 wiki_wiki = wikipediaapi.Wikipedia('en')
 
@@ -96,7 +99,7 @@ def text_to_vector(text):
      words = WORD.findall(text)
      return Counter(words)
 
-def page_finder(words, page_words):
+def page_finder(words, page_words, wiki_backlinks):
     
     for concept, title in words.items():
         if title:
@@ -105,11 +108,33 @@ def page_finder(words, page_words):
                 page_words[concept] = poss
             except wikipedia.exceptions.DisambiguationError as e:
                 pass
+            except wikipedia.exceptions.PageError as e:
+                pass
+            except requests.exceptions.RequestException as e:
+                #troppe richieste insieme a wikipedia, mi fermo e riprovo
+                sleep(5)
+                continue
 
-def usage_definition(a, b, page_words): 
-                  # Method 'Usage in Definition'
+    for c in list(page_words.keys()):
+        title = page_words[c].title
+
+        try:
+            page = wiki_wiki.page(title)
+            if page.exists():
+                num_bl = len(page.backlinks)
+                wiki_backlinks[c] = num_bl
+            else:
+                wiki_backlinks[c] = 0
+
+        except requests.exceptions.RequestException as e:
+            # troppe richieste insieme a wikipedia, mi fermo e riprovo
+            sleep(5)
+            continue
+
+def usage_definition(a, b, page_words):
+    # Method 'Usage in Definition'
     b_def = page_words[b].summary.upper()
-    if (a in b_def):                      # If 'a' appears in 'b' definition# Then 'a' is a prerequisite of 'b'
+    if (a.upper() in b_def):                      # If 'a' appears in 'b' definition# Then 'a' is a prerequisite of 'b'
         return 1
     else:
         return 0
@@ -132,13 +157,16 @@ def out_links(b, a, page_words):
     """Method to check outlinks in a page"""
     return (len(page_words[a].links) - len(page_words[b].links))
 
-def in_links (a, b, page_words):
+'''def in_links (a, b, page_words):
         a_page = wiki_wiki.page(page_words[a].title)
         b_page = wiki_wiki.page(page_words[b].title)
         if (a_page.exists() and b_page.exists()):
             return (len(a_page.backlinks) - len(b_page.backlinks))
         else:
-            return 0
+            return 0'''
+
+def in_links(a, b, page_backlinks):
+    return page_backlinks[a] - page_backlinks[b]
 
 def entropy (a, b, ldamodel, page_words, doc_term_matrix):
     tca = tcb = 0
@@ -159,9 +187,10 @@ def cosinesim(a, b, page_words):
     return calc_and_print_CosineSimilarity_for_all(tfs, text)
     
 def normalize(dictionary):
-    maxi = max(list(dictionary.values()))
-    mini = min(list(dictionary.values()))
-    dictionary.update((k, (v - mini)/(maxi - mini)) for k,v in dictionary.items())
+    if dictionary:
+        maxi = max(list(dictionary.values()))
+        mini = min(list(dictionary.values()))
+        dictionary.update((k, (v - mini)/(maxi - mini)) for k,v in dictionary.items())
     
 def populateDb(missingRel, cosinDict, lernDict, bid, cap): #popoulate the db 
     for key in missingRel:
@@ -175,46 +204,70 @@ def populateDb(missingRel, cosinDict, lernDict, bid, cap): #popoulate the db
         else: 
             bs.m4a = cosinDict[key]
             bs.m4b = lernDict[key]
+
+def updateStatus(bid, cap, status):
+    row = Bs_status.query.filter_by(bid=bid, cap=cap, method=4).first()
+    if not row:
+        stato = Bs_status(bid=bid, cap=cap, method=4, status=status)
+        db.session.add(stato)
+    else:
+        row.status = status
+    db.session.commit()
+
         
 def method_4(words, bid, cap):
-    
-    missingRel = []
-    page_words = {}
-    lernDict = {}
-    cosinDict = {}
-    
-    page_finder(words, page_words)
-    result = topic_model(page_words)
-    ldamodel = result[0]
-    doc_term_matrix = result[1]
-    
-    for a in list(page_words.keys()):
-        for b in [x for x in list(page_words.keys()) if x != a]:
-            if(usage_definition(a, b, page_words)):  
-                bs = Baseline_Methods.query.filter_by(bid=bid, cap=cap, lemma1=b, lemma2=a).first()
-                if not bs:
-                    bs = Baseline_Methods(bid=bid, cap=cap, lemma1=b, lemma2=a, m4=1)
-                    db.session.add(bs)
-                else: 
-                    bs.m4 = 1    
-            else:
-                inLinksDiff = in_links(a, b, page_words)
-                outLinksDiff = out_links(a, b, page_words)
-                topicCovDiff = entropy(a, b, ldamodel, page_words, doc_term_matrix)
-                contentSim = cosinesim(a, b, page_words)
-                if(outLinksDiff == 0):
-                    learnLevelDiff = topicCovDiff
+    try:
+        updateStatus(bid, cap, "running")
+
+        missingRel = []
+        page_words = {}
+        lernDict = {}
+        cosinDict = {}
+        wiki_backlinks = {}
+
+        page_finder(words, page_words, wiki_backlinks)
+
+        print("pagine trovate")
+        result = topic_model(page_words)
+        ldamodel = result[0]
+        doc_term_matrix = result[1]
+
+        for a in list(page_words.keys()):
+            for b in [x for x in list(page_words.keys()) if x != a]:
+                if(usage_definition(a, b, page_words)):
+                    bs = Baseline_Methods.query.filter_by(bid=bid, cap=cap, lemma1=b, lemma2=a).first()
+                    if not bs:
+                        bs = Baseline_Methods(bid=bid, cap=cap, lemma1=b, lemma2=a, m4=1)
+                        db.session.add(bs)
+                    else:
+                        bs.m4 = 1
                 else:
-                    learnLevelDiff =  inLinksDiff/outLinksDiff + topicCovDiff
-                valuet = {a + "__" + b : learnLevelDiff}
-                lernDict.update(valuet)
-                valuet = {a + "__" + b : contentSim}
-                cosinDict.update(valuet)
-                missingRel.append(a + "__" + b)
-#               if (learnLevelDiff > treshold1 and contentSim > treshold2):
-#                pre_req[b].append(a)
-        db.session.commit()
-    normalize(cosinDict)
-    normalize(lernDict)
-    populateDb(missingRel, cosinDict, lernDict, bid, cap)
+                    #inLinksDiff = in_links(a, b, page_words)
+                    inLinksDiff = in_links(a, b, wiki_backlinks)
+                    outLinksDiff = out_links(a, b, page_words)
+                    topicCovDiff = entropy(a, b, ldamodel, page_words, doc_term_matrix)
+                    contentSim = cosinesim(a, b, page_words)
+                    if(outLinksDiff == 0):
+                        learnLevelDiff = topicCovDiff
+                    else:
+                        learnLevelDiff =  inLinksDiff/outLinksDiff + topicCovDiff
+                    valuet = {a + "__" + b : learnLevelDiff}
+                    lernDict.update(valuet)
+                    valuet = {a + "__" + b : contentSim}
+                    cosinDict.update(valuet)
+                    missingRel.append(a + "__" + b)
+                    #definire threshold1 e threshold2 fisse ne codice
+                    #se superano queste threshold settare m4 a 1
+    #               if (learnLevelDiff > treshold1 and contentSim > treshold2):
+    #                pre_req[b].append(a)
+            db.session.commit()
+        normalize(cosinDict)
+        normalize(lernDict)
+        populateDb(missingRel, cosinDict, lernDict, bid, cap)
+
+        updateStatus(bid, cap, "succeeded")
+    except:
+        updateStatus(bid, cap, "failed")
+        print("error:", sys.exc_info())
+        raise
     

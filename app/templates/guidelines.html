@@ -11,33 +11,44 @@
 
         <p>
             <ol>
-                <li>Read the text and for each term included in D, identify its prerequisite terms in D.  Relazioni ridondanti non vengono aggiunti [t appartiene a D o T2K]</li>
-                <li>The annotation focus is the pair of two distinct terms.</li>
-                <li>Annotate the presence of the prerequisite relation, not its absence.</li>
-                <li>"Trust the text": consider only terms and relations extracted from D.</li>
-                <li>Do not annotate self-prerequisites.[violets the irreflective property]</li>
-                <li>Do not enter cycles in the annotation (i.e. concept A is a prerequisite of concept B, concept B of concept C and concept C happens to be prerequisite of concept A, creating a loop).</li>
-                <li>Per ogni relazione viene salvata e la quadrupla (numero frase, concetto X in quella frase, concetto Y prerequisito di X, peso della relazione*). I valori del peso possono essere {ALTO, BASSO}*. Quindi è possibile anche ri-annotare la stessa copia di concetti con un peso diverso in un’altra frase.</li>
-                <li>Cancellare una relazione vuol dire cancellare la quadrupla</li>
-                <li>Il peso di una relazione potrebbe essere modificato.</li>
+                <li>The goal of the annotation is identifying a prerequisite relation between two distinct terms of a textual corpus. The two terms represent concepts described in the text and can be referred to as target and prerequisite concepts.</li>
+                <li>A concept can be either a single or multi-word term extracted from the corpus.</li>
+                <li>Insert a prerequisite relation for a target concept if you think you need to know the information related to a different concept in order to understand what you are reading about the target concept. Each of the two concepts must be present either in the initial Terminology provided by the project manager or in the manual terminology built by you (i.e. the annotator) during the annotation process. If a concept is still missing in the terminology, add the corresponding term and then insert the relation (if this is allowed by the project manager).
+</li>
+                <li>The relation must be inserted exactly in the context (i.e. the sentence) where you find it: A concept could be mentioned more than once along the text, each time introducing novel information and recalling different concept(s). Make sure to add the prerequisite relation between two concepts exactly where the target concept description recalls the knowledge related to the concept you identified as prerequisite.</li>
+                <li>Build a concept pair only if a prerequisite relation does exist between the two: if you think that a relation between two concepts does not occur in the text, do not insert any relation. </li>
+                <li>Trust the text: you must annotate only concepts and relations that can be acquired from the text. Do not consider concepts and relations recalled from your background knowledge about the topic.</li>
+                <li>A concept cannot be a prerequisite of itself: self prerequisites such as "computer is a prerequisite of computer" will not be allowed by the system.
+</li>
+                <li>Do not introduce loops in the annotation. Imagine that you have already annotated that: i) "fruit" is a prerequisite of "citrus", and ii) "citrus" is a prerequisite of "orange". By annotating that "orange" is a prerequisite of "fruit", you will create a loop.</li>
+                <li>Every time you insert a relation you must also define its weight. Allowed values are: strong (the prerequisite is absolutely necessary to understand the other term) and weak (the prerequisite is useful but not strictly necessary).
+</li>
+                <li>After completing your annotation, you should also perform an annotation check aimed at revising you previously created PRs. By reading again the portion of text where you entered a relation, decide whether you want to confirm, delete or modify the pair.</li>
+                <li>Delete a prerequisite relation if you added it by mistake. Keep in mind, however, that you can delete one single instance of a pair at a time: if the same pair is annotated with the prerequisite relation in another part of the text, that will be preserved. If you think that ANY prerequisite relation between two concepts should be deleted, you must delete each of the relations having those two concepts.</li>
+                <li>Modify a prerequisite relation if you assigned it the wrong weight. You can modify the weight of the relation if you believe that text expressed a different relation strength than the one you originally assigned to the PR when creating it.</li>
             </ol>
-            *Interpretazione del peso: Alto = necessario; Basso = utile ma non necessario
+
         <p>
 
-        <h2>Domande</h2>
+        <h2>Knowledge elicitation questions</h2>
         <p>
-            <ol>
-                <li>Quali sono i concetti necessari per capire il significato di questo concetto?</li>
-                <li>Quali sono i concetti utilizzati nella definizione di questo concetto?</li>
-                <li>Ci sono concetti nel testo che segue (contesto immediatamente seguente, e.g. paragrafo) che aiutano a capire questo concetto?</li>
-                <li>Questo concetto  costituisce un caso particolare di un concetto già presente nel testo (o nel contesto immediatamente seguente)? Se si quale.</li>
-                <li>Questo concetto costituisce una parte di un altro concetto già presente nel testo? Se si quale? Il gomito è una parte del braccio</li>
-                <li>Questo concetto è costituito da parti già descritte precedentemente? Se si quali? Il braccio è composto da gomito ed etc.</li>
-                <li>Questo concetto è conseguenza di un altro precedentemente descritto? Se si quale.</li>
-                <li>Questo concetto è la causa di un altro concetto precedentemente descritto? Se si quale.</li>
+
+        The  purpose  of the "knowledge elicitation questions"  is to help you during the annotation task: while you’ll be reading the text, whenever you find a new concept (i.e., target concept)  think about the questions below to identify its prerequisite concepts.
+        <ol>
+        <li>Which concepts (among those mentioned in the text) you need to master in order to understand the meaning of the target concept?</li>
+        <li>Which concepts are recalled to define the target concept?</li>
+        <li>Are other concepts mentioned in the same context (e.g., sentence or paragraph) of the target concept? If so, are they useful to understand the meaning of the target concept?</li>
+        <li>Does the target concept represent a special case of another concept mentioned in the text (e.g., circumference[target] is a special case of ellipsis[prerequisite]?</li>
+        <li>Does the target concept show a part-of relation with another concept
+        mentioned in the text (e.g., the elbow[target] is a part of an
+            arm[prerequisite])?</li>
+        <li>Does the target concept consist of sub-elements already mentioned in the
+        text (e.g., elbow, forearm and shoulder[prerequisites] are parts of the
+            arm[target])?</li>
+<li>Is the target concept caused by another previously described concept (e.g.,
+rain[prerequisite] causes floods[target])) or vice versa (e.g., rain[target] is
+caused by low pressure[prerequisite])? If so, which one? Try to follow the relation proposed by the text author to understand if a prerequisite relation exists.</li>
             </ol>
-            Le regole 5 e 6 dipendono dalla scelta dell’autore di spiegare un concetto top-down bottom-up
-            Le regole 7 e 8 sono relazioni di causa - effetto quale direzione dipendono dalla scelta dell’autore di spiegare un concetto top-down bottom-up
         <p>
     </div>
 {% endblock %}

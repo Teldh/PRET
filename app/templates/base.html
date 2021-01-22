@@ -5,7 +5,9 @@
         <!-- Required meta tags -->
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        
+        <style>
+            body{background-size:cover;}
+        </style>
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <!-- Added from annotator.html -->
@@ -26,24 +28,41 @@
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
+                    <!--<li class="nav-item">
                         <a class="nav-link" href="{{ url_for('text_upload') }}">Text Upload</a>
+                    </li>-->
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Text</a>
+                        <div class="dropdown-menu">
+                            <a class="nav-link" href="{{ url_for('text_upload') }}">Upload text</a>
+                            <a class="nav-link" href="{{ url_for('text_delete') }}">Delete text</a>
+                            <a class="nav-link" href="{{ url_for('text_download') }}">Download CoNLL</a>
+                        </div>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('term_upload') }}">Terminology Upload</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Annotation</a>
+                        <div class="dropdown-menu">
+                            <a class="nav-link" href="{{ url_for('pre_annotator') }}">Create annotation</a>
+                            <a class="nav-link" href="{{ url_for('pre_revision') }}">Revision</a>
+                        </div>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('gold_standard') }}">Gold Standard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('pre_annotator') }}">Annotation</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('analysis') }}">Analysis</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('baseline') }}">Baseline Methods</a>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Automatic Prerequisite Extraction</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="{{ url_for('baseline') }}">Run method</a>
+                            <a class="dropdown-item" href="{{ url_for('baseline_results') }}">View results</a>
+                        </div>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('comparison') }}">Comparison</a>
                     </li>

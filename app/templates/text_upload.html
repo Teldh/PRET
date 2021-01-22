@@ -11,8 +11,11 @@
 <div class="container mt-5" style="background-color:rgb(255,255,255,0.9);padding:1.25rem;border-radius:4px">
       <!-- To create a custom file upload, wrap a container element with a class of .custom-file around the input with type="file". Then add the .custom-control-input to it: -->
         <div class="form-row">
+            <h3>Text Upload</h3>
+               Provide the name and metadata of the corpus (text) you want to annotate. If the corpus is organized in chapters, you may want to annotate them separately. PRET interface allows you to enter the number of the chapter.
+            <br><br>
             <div class="form-group col-md-6">
-              <label for="book">Insert the name of the book/paper</label>
+              <label for="book">Corpus Name (e.g., the name of the textbook and/or of a textbook chapter)</label>
               <input class="form-control" id="book" name="book" required>
               <div class="invalid-feedback">
                   Please insert the name
@@ -28,14 +31,14 @@
         </div>
         <div class="form-row">
             <div class="form-group col-md-6">
-              <label for="year">Insert the year of the book/paper</label>
+              <label for="year">Year of Publication</label>
               <input type="number" class="form-control" id="year" required>
               <div class="invalid-feedback">
                   Please insert just numbers
               </div>
             </div>
             <div class="form-group col-md-6">
-              <label for="cap">Insert the cap of the book</label>
+              <label for="cap">Chapter </label>
               <input type="number" class="form-control" id="cap" required>
                 <div class="invalid-feedback">
                   Please insert just numbers
@@ -44,30 +47,45 @@
         </div>
         <div class="form-row">
             <div class="form-group col-md-6">
-              <label for="category">Insert the category of the book/paper</label>
+              <label for="category">Corpus Topic/Subject</label>
               <input class="form-control" id="category" required>
               <div class="invalid-feedback">
                   Please insert the category
               </div>
             </div>
+            <div class="form-group col-md-6">
+              <label for="author">Language</label>
+              <input class="form-control" id="language"  required>
+              <div class="invalid-feedback">
+                  Please insert language
+              </div>
+            </div>
         </div>
-        <div class="form-row custom-file col-md-6">
+    <p>Text</p>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+
             <input type="file" class="custom-file-input" id="customFile" name="filename" required>
-            <label class="custom-file-label" for="customFile">Choose file with extension '.txt'</label>
+            <label class="custom-file-label" for="customFile" style="left:5px;">Choose file with extension '.txt'</label>
+            </div>
         </div>
 
-        <div class="mt-3">
-            <button class="btn btn-primary">Choose file</button>
-       
+    <!--<div class="row d-flex justify-content-center container text" style="border-color:transparent;position:inherit">-->
+        <p id="instructions" style="display:none;font-weight: bold;white-space: pre-line;">Select section titles (if present) to add information about the structure of your text.</p>
+        <!---->
+        <!--<div id="testo"></div>
+    </div><br><br><br>-->
+
+    <pre id="content-target"></pre>
+    <div class="mt-3">
+            <!--<button class="btn btn-primary">Choose file</button>-->
+
             <button type="submit" class="btn btn-primary save">Save file</button>
-        </div> 
-</form>  
-    <br>
-    <div class="row d-flex justify-content-center container text" style="border-color:transparent;position:inherit">
-        <pre id="content-target"></pre>
-    </div>
-    
+        </div>
 </div>
+</form>
+    
+
 <div class="modal"><!-- Place at bottom of page --></div>
 
 

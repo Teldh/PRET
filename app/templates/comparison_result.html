@@ -1,153 +1,300 @@
 {% extends "base.html" %}
 {% block content %}
-
+<style>
+th{
+    width:28%;
+}
+td{
+    width:36%;
+}
+</style>
 <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;padding:15px;margin-bottom:3rem">
 
+
     <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
-    <table class="table table-bordered" style="text-align:center">
-        
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Summary</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Shared Relations</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Opposite Relations</a>
+  </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+      <br>
+      <h4> Textbook Info: </h4>
+      <table class="table table-bordered">
+
         <tr>
-            <td style="font-weight:bold">Text1</td>
             <th scope="row"></th>
-            <td style="font-weight:bold">Text2</td>      
+            <td style="font-weight:bold">{{ text1 }}</td>
+            <td style="font-weight:bold">{{ text2 }}</td>
         </tr>
-        
+
         <tr>
-            <td>{{ file1['sentences']|tojson }}</td>
             <th scope="row">Text Length (sentences)</th>
-            <td>{{ file2['sentences']|tojson }}</td>      
+            <td>{{ file1['sentences']|tojson }}</td>
+            <td>{{ file2['sentences']|tojson }}</td>
         </tr>
-        
-        <tr>
-            <td>{{ file1['tokens']|tojson }}</td>
+
+          <tr>
             <th scope="row">Text Length (tokens)</th>
+            <td>{{ file1['tokens']|tojson }}</td>
             <td>{{ file2['tokens']|tojson }}</td>
         </tr>
-        
+      </table>
+    <br>
+    <h4> Concepts and Relations: </h4>
+    <table class="table table-bordered">
         <tr>
-            <td>{{ file1['links']|tojson }}</td>
+            <th scope="row"></th>
+            <td style="font-weight:bold">{{ text1 }}</td>
+            <td style="font-weight:bold">{{ text2 }}</td>
+        </tr>
+        <tr>
             <th scope="row">Number of relations</th>
+            <td>{{ file1['links']|tojson }}</td>
             <td>{{ file2['links']|tojson }}</td>
         </tr>
-        
+
+        {% if file1['unique relations'] is defined and file2['unique relations'] is defined %}
         <tr>
-            <td>{% if file1['unique relations'] is defined %}
-                 {{ file1['unique relations']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
             <th scope="row">Number of unique relations</th>
-            <td>{% if file2['unique relations'] is defined %}
-                 {{ file2['unique relations']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
+            <td>{{ file1['unique relations']|tojson }}</td>
+            <td>{{ file2['unique relations']|tojson }}</td>
         </tr>
-        
+        {% endif %}
+
+        {% if file1['strong relations'] is defined and file2['strong relations'] is defined%}
         <tr>
-            <td>{% if file1['strong relations'] is defined %}
-                 {{ file1['strong relations']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
             <th scope="row">Number of strong relations</th>
-            <td>{% if file2['strong relations'] is defined %}
-                 {{ file2['strong relations']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
+            <td> {{ file1['strong relations']|tojson }}</td>
+            <td>{{ file2['strong relations']|tojson }}</td>
         </tr>
-        
+        {% endif %}
+
+        {% if file1['weak relations'] is defined and file2['weak relations'] is defined%}
         <tr>
-            <td>{% if file1['weak relations'] is defined %}
-                 {{ file1['weak relations']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
             <th scope="row">Number of weak relations</th>
-            <td>{% if file2['weak relations'] is defined %}
-                 {{ file2['weak relations']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
+            <td>{{ file1['weak relations']|tojson }}</td>
+            <td>{{ file2['weak relations']|tojson }}</td>
         </tr>
-        
+        {% endif %}
+
+        {% if file1['default concepts'] is defined  and file2['default concepts'] is defined%}
         <tr>
-            <td>{% if file1['default concepts'] is defined %}
-                 {{ file1['default concepts']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
             <th scope="row">Number of default concepts</th>
-            <td>{% if file2['default concepts'] is defined %}
-                 {{ file2['default concepts']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
+            <td>{{ file1['default concepts']|tojson }}</td>
+            <td>{{ file2['default concepts']|tojson }}</td>
         </tr>
-        
+        {% endif %}
+
+        {% if file1['entered concepts'] is defined and file2['entered concepts'] is defined%}
         <tr>
-            <td>{% if file1['entered concepts'] is defined %}
-                 {{ file1['entered concepts']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
             <th scope="row">Number of concepts entered</th>
-            <td>{% if file2['entered concepts'] is defined %}
-                 {{ file2['entered concepts']|tojson }}
-             {% else %}
-                 aaa
-            {% endif %}</td>
+            <td>{{ file1['entered concepts']|tojson }}</td>
+            <td>{{ file2['entered concepts']|tojson }}</td>
         </tr>
-        
+        {% endif %}
+     </table>
+    <br>
+     <h4>Concept Map Info:</h4>
+    <table class="table table-bordered">
+    <tr>
+            <th scope="row"></th>
+            <td style="font-weight:bold">{{ text1 }}</td>
+            <td style="font-weight:bold">{{ text2 }}</td>
+        </tr>
+
         <tr>
-            <td>{{ file1['transitive']|tojson }}</td>
             <th scope="row">Number of transitive relations</th>
+            <td>{{ file1['transitive']|tojson }}</td>
+
             <td>{{ file2['transitive']|tojson }}</td>
         </tr>
-        
+
         <tr>
-            <td>{{ file1['loops']|tojson }}</td>
             <th scope="row">Number of cycles</th>
+            <td>{{ file1['loops']|tojson }}</td>
+
             <td>{{ file2['loops']|tojson }}</td>
         </tr>
-        
+
         <tr>
-            <td>{{ file1['diameter']|tojson }}</td>
             <th scope="row">Diameter</th>
+            <td>{{ file1['diameter']|tojson }}</td>
+
             <td>{{ file2['diameter']|tojson }}</td>
         </tr>
-        
+
         <tr>
-            <td>name of the concept:{{ file1['max out degree'][0]|tojson }} #: {{ file1['max out degree'][1]|tojson }}</td>
             <th scope="row">Max number of outgoing arcs</th>
+            <td>name of the concept:{{ file1['max out degree'][0]|tojson }} #: {{ file1['max out degree'][1]|tojson }}</td>
+
             <td>name of the concept:{{ file2['max out degree'][0]|tojson }} #: {{ file2['max out degree'][1]|tojson }}</td>
         </tr>
-        
+
         <tr>
-            <td>name of the concept:{{ file1['max in degree'][0]|tojson }} #: {{ file1['max in degree'][1]|tojson }}</td>
             <th scope="row">Max number of incoming arcs</th>
+            <td>name of the concept:{{ file1['max in degree'][0]|tojson }} #: {{ file1['max in degree'][1]|tojson }}</td>
+
             <td>name of the concept:{{ file2['max in degree'][0]|tojson }} #: {{ file2['max in degree'][1]|tojson }}</td>
         </tr>
-        
+
         <tr>
-            <td>aaa</td>
             <th scope="row">Longest path</th>
-            <td>aaa</td>
+            {% if file1['logest_path_root'] == "Cycle" %}
+                <td> Cycle </td>
+            {% else %}
+                <td>from: "{{ file1['logest_path_root'] }}" to: "{{ file1['logest_path_leaf'] }}", lenght: {{ file1['logest_path_lenght'] }} </td>
+            {% endif %}
+
+            {% if file2['logest_path_root'] == "Cycle" %}
+                <td> Cycle </td>
+            {% else %}
+                <td>from: "{{ file2['logest_path_root'] }}" to: "{{ file2['logest_path_leaf'] }}", lenght: {{ file2['logest_path_lenght'] }} </td>
+            {% endif %}
+
         </tr>
-        
+
         <tr>
-            <td>{{ file1['leaves']|tojson }}</td>
             <th scope="row">Number of leaves</th>
+            <td>{{ file1['leaves']|tojson }}</td>
             <td>{{ file2['leaves']|tojson }}</td>
         </tr>
-        
+
         <tr>
-            <td>aaa</td>
             <th scope="row">Number of roots</th>
-            <td>aaa</td>
+            <td>{{ file1['roots'] }}</td>
+            <td>{{ file2['roots'] }}</td>
         </tr>
+      {% if accuracy1 is defined %}
+      <tr>
+            <th scope="row">Accuracy to gold</th>
+            <td>{{ accuracy1 }}</td>
+            <td>{{ accuracy2 }}</td>
+      </tr>
+      <tr>
+          <th scope="row">Precision to gold</th>
+            <td>{{ precision1 }}</td>
+            <td>{{ precision2 }}</td>
+      </tr>
+      <tr>
+            <th scope="row">Recall to gold</th>
+            <td>{{ recall1 }}</td>
+            <td>{{ recall2 }}</td>
+      </tr>
+      <tr>
+            <th scope="row">F1 Score to gold</th>
+            <td>{{ F1_1 }}</td>
+            <td>{{ F1_2 }}</td>
+      </tr>
+      {% endif %}
     </table>
-    
+  </div>
+  <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+      <br>
+      <!--Se accuracy1 è definita vuol dire che è un confronto fra due metodi e devo mostrare se le relazioni sono nella gold-->
+      {% if accuracy1 is defined %}
+      <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="checkbox" onclick="filtra()">
+          <label class="form-check-label" for="defaultCheck1">
+            Only in gold relations
+          </label>
+      </div>
+      <br>
+      {% endif %}
+      <table class="table table-bordered" id="rel_condivise" style="text-align:center">
+
+        <tr>
+            <th>Prerequisite</th>
+            <th>Target</th>
+            {% if entrambi_utenti %}
+            <th>Weight {{ text1.split(":")[1] }}</th>
+            <th>Weight {{ text2.split(":")[1] }}</th>
+            {% elif accuracy1 is defined %}
+                <th>In Gold</th>
+            {% endif %}
+        </tr>
+
+        <!-- se ho due metodi metto per prima tutte le relazioni condivise anche con la gold -->
+        {% if relazioni_condivise_gold is defined %}
+            {% for rel in relazioni_condivise_gold %}
+                <tr style="background-color: #1ade7f">
+                <td>{{ rel.prereq }}</td>
+                <td>{{ rel.target }}</td>
+                <td> Yes </td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+
+        {% for rel in relazioni_condivise %}
+            {% if relazioni_condivise_gold is defined %}
+                <tr style="background-color: #ff010194">
+            {% else %}
+                <tr>
+            {% endif %}
+            <td>{{ rel.prereq }}</td>
+            <td>{{ rel.target }}</td>
+            {% if entrambi_utenti %}
+                 <td>{{ rel.weight1 }}</td>
+                 <td>{{ rel.weight2 }}</td>
+            {% elif relazioni_condivise_gold is defined %}
+                 <td> No </td>
+            {% endif %}
+            </tr>
+        {% endfor %}
+        </table>
+  </div>
+  <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+      <br>
+
+      <table class="table table-bordered" style="text-align:center">
+
+        <tr>
+            <th>Lemma 1</th>
+            <th>Lemma 2</th>
+        </tr>
+        {% for rel in relazioni_opposte %}
+        <tr>
+            <td>{{ rel.lemma1 }}</td>
+            <td>{{ rel.lemma2 }}</td>
+        <tr>
+        {% endfor %}
+        </table>
+  </div>
+</div>
+<script>
+    $('#myTab a').on('click', function (e) {
+      e.preventDefault()
+      $(this).tab('show')
+    });
+
+    var table = document.getElementById("rel_condivise");
+    var tr = table.getElementsByTagName("tr");
+
+    function filtra(){
+        var checkBox = document.getElementById("checkbox");
+
+        for (var i = 1; i < table.rows.length; i++) {
+
+            var in_gold = tr[i].cells[2].innerHTML;
+            console.log(typeof(in_gold));
+
+            if( in_gold.trim() === "No" && checkBox.checked == true)
+                tr[i].style.display = "none";
+            else
+                tr[i].style.display = "";
+
+        }
+    }
+</script>
+
+
+
 </div>
 {% endblock %}

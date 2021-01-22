@@ -1,47 +1,93 @@
 {% extends "base.html" %}
 {% block content %}
-
+ <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat">
 <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;padding:15px;margin-bottom:3rem">
 
-    <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
-    <h1>Agreement:</h1>
-    <br>
-    <table class="table table-bordered">
-        <tr>
-            <th scope="row">Annotator 1:</th>
-            <td>{{ rel1 }}</td>
-        </tr>
-        
-        <tr>
-            <th scope="row">Annotator 2:</th>
-            <td>{{ rel2 }}</td>
-        </tr>
-        
-        <tr>
-            <th scope="row">Number of relations annotated by Annotator1 and Annotator2:</th>
-            <td>{{ file["allAgree"]|tojson }}</td>
-        </tr>
-        
-        <tr>
-            <th scope="row">Number of relations annotated by Annotator1</th>
-            <td>{{ file["rel1"]|tojson }}</td>
-        </tr>
-        
-        <tr>
-            <th scope="row">Number of relations annotated by Annotator2</th>
-            <td>{{ file["rel2"]|tojson }}</td>
-        </tr>
-        
-        <tr>
-            <th scope="row">number of relations never annotated</th>
-            <td>{{ file["allDisag"]|tojson }}</td>
-        </tr>
-        
-        <tr>
-            <th scope="row">Cohen's kappa value:</th>
-            <td>{{ file["kappa"]|tojson }}</td>
-        </tr>
-    </table>
-    
+    <h1>Cohen's kappa</h1>
+
+    Cohen's kappa is a statistical measure used to assess the reliability of an annotated dataset based on the agreement between any two annotators.
+    <br><br>
+     <!-- <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="cohen-tab" data-toggle="tab" href="#cohen" role="tab" aria-controls="home" aria-selected="true">Cohen's kappa</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="fleiss-tab" data-toggle="tab" href="#fleiss" role="tab" aria-controls="profile" aria-selected="false">Fleiss's kappa</a>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+      <div class="tab-pane fade show active" id="cohen" role="tabpanel" aria-labelledby="home-tab">-->
+
+        <table class="table table-bordered">
+            <tr>
+                <th scope="row">Annotator 1:</th>
+                <td>{{ rel1 }}</td>
+            </tr>
+
+            <tr>
+                <th scope="row">Annotator 2:</th>
+                <td>{{ rel2 }}</td>
+            </tr>
+
+            <tr>
+                <th scope="row">Cohen's kappa value:</th>
+                <td>{{ file["kappa"]|tojson }}</td>
+            </tr>
+
+            <!--<tr>
+                <th scope="row">Kappa no-inv all-paths:</th>
+                <td>{{ no_inv }}</td>
+            </tr>
+
+            <tr>
+                <th scope="row">Kappa conta-inv all-paths:</th>
+                <td>{{ conta_inv }}</td>
+            </tr>-->
+
+            <tr>
+                <th scope="row">Number of relations annotated by Annotator1 and Annotator2:</th>
+                <td>{{ file["allAgree"]|tojson }}</td>
+            </tr>
+
+            <tr>
+                <th scope="row">Number of relations annotated by Annotator1</th>
+                <td>{{ file["rel1"]|tojson }}</td>
+            </tr>
+
+            <tr>
+                <th scope="row">Number of relations annotated by Annotator2</th>
+                <td>{{ file["rel2"]|tojson }}</td>
+            </tr>
+
+            <!--<tr>
+                <th scope="row">number of relations never annotated</th>
+                <td>{{ file["allDisag"]|tojson }}</td>
+            </tr>-->
+
+
+        </table>
+      <!--</div>
+
+      <div class="tab-pane fade" id="fleiss" role="tabpanel" aria-labelledby="home-tab">
+          <br>
+          Descrizione..
+          <table class="table table-bordered" style="margin-top: 1rem;">
+            <tr>
+                <th scope="row">Fleiss's kappa</th>
+                <td>{{fleiss}}</td>
+            </tr>
+          </table>-->
+
+
+      </div>
+    </div>
+
 </div>
+    <script>
+    $('#myTab a').on('click', function (e) {
+      e.preventDefault()
+      $(this).tab('show')
+    })
+</script>
 {% endblock %}

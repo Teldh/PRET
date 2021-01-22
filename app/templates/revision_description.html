@@ -1,0 +1,48 @@
+{% block content %}
+   <!-- <title>Guidelines for annotators</title> -->
+    <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+        <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" /> -->
+            <!-- Add icon library -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+    <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;max-width: 1135px;margin-bottom:3rem;padding:15px">
+
+        <header class="page-header">
+            <h3>Revision and tag labels description</h3>
+        </header>
+        <br>
+        <h5>DELETE</h5>
+        <span style="font-weight: bold;">Background knowledge:</span> the PR derives from the expert's domain knowledge since it's not expressed in the text;
+        <br> <span style="font-weight: bold;">Too far: </span>the relation is too weak (i.e., in the path there are too many concepts in between the target and prerequisite concept);
+        <br> <span style="font-weight: bold;">Annotation error: </span>mistake due to distraction;
+        <br> <span style="font-weight: bold;">Co-requisites:</span> although related, there is no dependency relation between the two concepts (e.g. verbs to be and to have with respect to the concept of auxiliary verb);
+        <br> <span style="font-weight: bold;">Wrong direction:</span> target and prerequisite concepts should be reversed in the pair.
+        <br><br>
+        <h5>CONFIRM</h5>
+        <span style="font-weight: bold;">Lexical Relation:</span> taxonomic relations, such as hypernyms (is-a relation: “a dog is a mammal”) or meronyms (part-of relation: “the wheel is a part of a car”).
+        <br> <span style="font-weight: bold;">Functional Relation:</span> One of the two concepts uses the other or is needed by it  (e.g., verbs use auxiliaries to express past time tense).
+        <br> <span style="font-weight: bold;">Definition:</span> The prerequisite concept is used in the definition of the target concept (e.g., ”an integer is a number with no fractional component”).
+        <br> <span style="font-weight: bold;">Example:</span> the target concept is explained as an example of another one (e.g., “ a polygon, such as a triangle”).
+        <br> <span style="font-weight: bold;">In Depth:</span> The prerequisite concept is used as an in-depth description of another one  (e.g., “Among auxiliaries, modal verbs etc.”).
+        <br> <span style="font-weight: bold;">Causal Relation:</span> cause-effect relation between two concepts (e.g. “rain causes floods”)
+
+<br><br>
+        <h5>WEIGHT</h5>
+        <span style="font-weight: bold;">Weak:</span> the prerequisite is useful but not strictly necessary
+        <br><span style="font-weight: bold;">Strong:</span> the prerequisite is absolutely necessary to understand the other concept
+
+
+
+
+
+
+    </div>
+{% endblock %}

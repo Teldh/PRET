@@ -1,3 +1,4 @@
+<link rel="stylesheet" type="text/css" href='../static/styles/visualization.css'/>
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
@@ -16,7 +17,7 @@
             <abbr title="See the matrix (sortable by different criterion)."><img src="../static/images/blue_question_mark.png" height="20px"/></abbr>
         </p>
         <p>
-            <button type="button" class="btn btn-primary"> Graph </button>
+            <button type="button" id="show_save_modal" class="btn btn-primary"> Graph </button>
             <abbr title="Explore the network of concepts with their connections (useful to easily detect transitives and cycles)."><img src="../static/images/blue_question_mark.png" height="20px"/></abbr>
         </p>
         <p>
@@ -49,4 +50,5 @@
         -->
 
    </div>
+
 {% endblock %}

@@ -12,18 +12,22 @@
             </header>
         <div class="filters">
             <div>
+                    <h3 id="h33" >Text:</h3>
+            </div>
+            <div>
                 <label for="annotator-select">Annotator:</label>
                 <select id="annotator-select">
-                    <option value="All">All</option>
                 </select>
             </div>
+            <div class='button'>
+               <button onclick="onDownload()">Download Graph Structure</button>
+           </div>
         </div>
        
     </div>
 
     <script type="text/javascript">
-             var $json = {{ file|tojson }}  
-             $json = JSON.parse($json)  
+             var $json = JSON.parse(localStorage.getItem('testObject'));
         </script>
     <script src="../static/bezier_graph.js"></script>
 {% endblock %}

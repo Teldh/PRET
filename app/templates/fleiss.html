@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;padding:15px;margin-bottom:3rem">
+
+    <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
+    <h1>Fleiss' kappa</h1>
+    <br>
+          Fleiss' kappa is a statistical measure for assessing the reliability of a dataset on the basis of the agreement computed between all its annotators.
+          <br>This contrasts with Cohens' Kappa, which only works between no more than two annotators.
+    <table class="table table-bordered" style="margin-top: 1rem;">
+            <tr>
+                <th scope="row">Fleiss' kappa</th>
+                <td>{{fleiss}}</td>
+            </tr>
+    
+</div>
+{% endblock %}

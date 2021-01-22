@@ -1,18 +1,413 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
-<body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
-        <div class="container">
+<body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat" ></body>
+     <!--<div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:0.5rem;border-radius:4px;max-width: 1135px;padding:15px">
+    <h3>Automatic prerequisite Extraction</h3>
+    PRET provides you with various methods for the automatic extraction of prerequisite relations. You can use them to generate an annotated dataset, or compare the results of these methods against your (gold) annotations.
+                        Choose a method to perform Automatic Extraction of  Prerequisite relations from your text. Below you can find a description of the methods currently available in PRET and their bibliographic reference.
+                        <br>
+     <br><p style="font-weight: bold;">METHOD DESCRIPTION:</p>
+                                        <ol>
+
+                                            <li>Lexical Relations: a prerequisite relation is identified between concepts showing a lexical relation such as hypernyms-hyponyms and holonyms-meronyms determined using Wordnet (link).</li>
+                                            <li>Lexical Syntactic Pattern Match: a prerequisite is identified between two concepts appearing in one of the linguistic patterns defined in (Wang et al, 2016).</li>
+                                            <li>Relational Metric:  this method exploits the Ref-D metric (Liang et al. 2015) for prerequisite relation identification which computes the associative strength of two concepts.</li>
+                                            <li>Wikipedia-based relations: the method based on Wikipedia pages, described in (Wang et al, 2016), extracts domain key concepts from educational resources and then identifies prerequisite relationships between them. The key concept extraction exploits Wikipedia to construct a domain dictionary in which each concept is the title of a Wikipedia Page. Prerequisite relation identification occurs through different metrics (including Usage in Definition, Content Similarity, Learning Level).</li>
+                                            <li>Textbook Structure: TOC (Table of Content) distance between two concepts, described in (Wang et al, 2016), computes the relation strength between the concepts as the distance between the subchapter numbers where they appear.</li>
+                                            <li>Temporal Patterns: this method is based on Burst Analysis to identify relevant portions of texts (burst intervals) for each concept and then exploits temporal patterns between burst intervals to find concept pairs showing a prerequisite relation, as described in (Adorni et al. 2019).</li>
+                                        </ol>
+    </div>-->
+        <div class="container" style="margin-top:0.5rem;">
           <div class="row">
-            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
-              <div class="card card-signin my-5" style="background-color:rgb(255,255,255,0.9)">
+            <div class="col-sm-11 col-md-9 col-lg-7 mx-auto" style="background-color:rgb(255,255,255,0.9);border-radius:4px;margin-bottom: 1rem;">
                 <div class="card-body">
-                    <h5 class="card-title text-center">Select a text and a baseline method</h5>
+                    <div style="font-size:14px">
+                    <h3>Automatic Prerequisite Extraction</h3>
+                        PRET provides you with various methods for the automatic extraction of prerequisite relations. You can use them to generate an annotated dataset, or compare the results of these methods against your (gold) annotations.
+                        Choose a method to perform Automatic Extraction of  Prerequisite relations from your text. Below you can find a description of the methods currently available in PRET and their bibliographic reference.
+                        <br>
+                        <a href="" target="_blank"onclick="open_description();">Read the methods description</a>
+                    <br><br>
+                    </div>
+
+                    <h5 class ="card-title text-center">Select a text and a method of extraction</h5>
                       <div class="form-group">
-                        {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
+
+                          <form action="" id="form" method="post" class="form" role="form">
+                              {{ form.csrf_token }}
+                              <div class="form-group ">
+                                  {{ form.book_cap.label (class_='control-label')}}
+                                  {{ form.book_cap(class_='form-control')}}
+                              </div>
+                              <div class="form-group ">
+                                  {{ form.baseline_method.label (class_='control-label')}}
+                                  {{ form.baseline_method(class_='form-control')}}
+                              </div>
+                              <div class="form-group ">
+
+                                  {{ form.threshold.label (class_='control-label')}}
+                                  <div id="refDistance" style="display:none;font-size:13px; margin-bottom:.5rem;">
+                                      This method assigns each possible relation a value between -1 and 1.<br>
+                                      Threshold indicates beyond what value the relation must be considered as such.
+
+                                  </div>
+
+                                  <div id="textStructure" style="display:none;font-size:13px; margin-bottom:.5rem;">
+                                      This method assigns at each pair of concepts the distance between their subchapter numbers.<br>
+                                      Threshold indicates beyond what value the relation must be considered as such.
+
+                                  </div>
+
+                                  <div id="Burst" style="display:none;font-size:13px; margin-bottom:.5rem;">
+                                      This method assigns each possible relation a value greater then or equal 0.<br>
+                                      Threshold indicates beyond what value the relation must be considered as such.
+
+                                  </div>
+
+
+
+                                  {{ form.threshold(class_='form-control')}}
+                              </div>
+
+                              <div class="checkbox">
+                                  {{ form.default}}
+                                  {{ form.default.label}}
+                              </div>
+
+                              <!-- BURST PARAMS -->
+
+                              <div class="form-group " ><br>
+                                  <span id="Kleinberg">Kleinberg's parameters: </span>
+                              </div>
+                              <div class="container">
+                                  <div class="row">
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.s.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.s(class_='form-control')}}
+                                              </div>
+                                         </div>
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.gamma.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.gamma(class_='form-control')}}
+                                              </div>
+                                        </div>
+                                      <div class="col-sm">
+                                            <div class="form-group ">
+                                                 {{ form.level.label (class_='control-label', style='font-size:small;')}}
+                                                 {{ form.level(class_='form-control')}}
+                                            </div>
+                                      </div>
+                                  </div>
+                              </div>
+
+
+                              <div class="form-group " >
+                                  <span id="allen">Allen weights: </span>
+                              </div>
+                              <div class="container">
+                                  <div class="row">
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.equals.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.equals(class_='form-control')}}
+                                              </div>
+                                         </div>
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.before.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.before(class_='form-control')}}
+                                              </div>
+                                        </div>
+                                      <div class="col-sm">
+                                            <div class="form-group ">
+                                                      {{ form.after.label (class_='control-label', style='font-size:small;')}}
+                                                      {{ form.after(class_='form-control')}}
+                                            </div>
+                                      </div>
+                                  </div>
+
+                                  <div class="row">
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.meets.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.meets(class_='form-control')}}
+                                              </div>
+                                         </div>
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.metby.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.metby(class_='form-control')}}
+                                              </div>
+                                        </div>
+                                      <div class="col-sm">
+                                            <div class="form-group ">
+                                                      {{ form.overlaps.label (class_='control-label', style='font-size:small;')}}
+                                                      {{ form.overlaps(class_='form-control')}}
+                                            </div>
+                                      </div>
+                                  </div>
+
+                                  <div class="row">
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.overlappedby.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.overlappedby(class_='form-control')}}
+                                              </div>
+                                         </div>
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.during.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.during(class_='form-control')}}
+                                              </div>
+                                        </div>
+                                      <div class="col-sm">
+                                            <div class="form-group ">
+                                                {{ form.includes.label (class_='control-label', style='font-size:small;')}}
+                                                {{ form.includes(class_='form-control')}}
+                                            </div>
+                                      </div>
+                                  </div>
+
+                                  <div class="row">
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.starts.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.starts(class_='form-control')}}
+                                              </div>
+                                         </div>
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.startedby.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.startedby(class_='form-control')}}
+                                              </div>
+                                        </div>
+                                      <div class="col-sm">
+                                            <div class="form-group ">
+                                                {{ form.finishes.label (class_='control-label', style='font-size:small;')}}
+                                                {{ form.finishes(class_='form-control')}}
+                                            </div>
+                                      </div>
+                                  </div>
+
+                                  <div class="row">
+                                        <div class="col-sm">
+                                              <div class="form-group ">
+                                                  {{ form.finishedby.label (class_='control-label', style='font-size:small;')}}
+                                                  {{ form.finishedby(class_='form-control')}}
+                                              </div>
+                                         </div>
+                                      <div class="col-sm"></div>
+                                      <div class="col-sm"></div>
+                                  </div>
+
+                              </div>
+
+                              <div class="form-group ">
+                                  {{ form.max_gap.label (class_='control-label')}}
+                                  {{ form.max_gap(class_='form-control')}}
+                              </div>
+
+                              <div class="checkbox">
+                                  {{ form.use_inverses}}
+                                  {{ form.use_inverses.label}}
+                              </div>
+
+
+                              <input class="btn btn-primary" id="submit" name="submit" type="submit" value="Launch Method">
+
+                        </form>
+                      </div>
                   </div>
                 </div>
             </div>
           </div>
         </div>
+        </div>
+
+        <script type="text/javascript">
+
+
+            let threshold = document.getElementById('threshold');
+            let threshold3 = document.getElementById('refDistance');
+            let threshold5 = document.getElementById('textStructure');
+            let threshold6 = document.getElementById('Burst');
+            let baseline_method = document.getElementById('baseline_method');
+            let book_select = document.getElementById('book_cap');
+            let submit_button = document.getElementById('submit');
+            let default_check = document.getElementById('default');
+            let burst_params = ['s','gamma','level','Kleinberg','allen','equals', 'before', 'after','meets','metby',
+                'overlaps','overlappedby','during','includes','starts','startedby','finishes','finishedby','max_gap'
+                ,'use_inverses'];
+
+            $('document').ready(function(){
+                aggiornaStati();
+
+                if (baseline_method.value == '3' || baseline_method.value == '5' || baseline_method.value == '6')
+                    threshold.disabled=false;
+                else
+                    threshold.disabled=true;
+
+                if( document.getElementById('baseline_method').value=='6'){
+                    $('#default').parent().show();
+
+                    if(document.getElementById('default').checked == false)
+                        show_burst_params();
+                    else
+                        hide_burst_params();
+                }else{
+                    $('#default').parent().hide();
+                    hide_burst_params();
+                }
+
+            });
+
+
+
+            threshold.disabled=true;
+
+
+            $("#form").submit(function(event){
+                textToVis = baseline_method.options[baseline_method.selectedIndex].text.replace(/ *\([^)]*\) */g, "")
+                                + " (running ⚡)";
+                baseline_method.options[baseline_method.selectedIndex].text = textToVis;
+            });
+
+
+            function aggiornaStati(){
+
+                //rimuovo le parentesi, cioè gli stati del libro precedente
+                    for (i = 0; i < baseline_method.length; i++)
+                        baseline_method.options[i].text = baseline_method.options[i].text.replace(/ *\([^)]*\) */g, "");
+
+                    book_cap = book_select.value;
+                    fetch('/baseline/' + book_cap).then(function(response) {
+                        response.json().then(function(data) {
+
+                            data.stati.forEach(function(stato){
+                                baseline_method.options[stato.id-1].text += " ("+ stato.stato+")";
+                          })
+
+
+                        });
+                    });
+            }
+
+            function hide_burst_params(){
+
+                 for (var i in burst_params){
+                    document.getElementById(burst_params[i]).disabled = true;
+                    $('#'+burst_params[i]).parent().hide();
+                 }
+             }
+
+            function show_burst_params(){
+
+                 for (var i in burst_params){
+                    document.getElementById(burst_params[i]).disabled = false;
+                    $('#'+burst_params[i]).parent().show();
+                 }
+             }
+
+            /*function set_burst_params(){
+                 book_cap = book_select.value;
+
+
+                 //se lo stato del burst è modificabile, devo caricare i parametri usati precedentemente
+                 fetch('/baseline_burst_status/' + book_cap).then(function(response) {
+                     response.json().then(function(data) {
+
+                         if(data.stato == "modifiable"){
+
+                             fetch('/baseline_burst_params/' + book_cap).then(function(response) {
+                                 response.json().then(function(data) {
+
+                                     console.log(data);
+                                    for( var parametro in data )
+                                        document.getElementById(parametro).value = data[parametro];
+
+                                 });
+                             });
+
+
+                             document.getElementById('submit').value = 'Change parameters and relaunch';
+                         }
+
+                     });
+                 });
+
+
+             }*/
+
+            book_select.onchange = function(){
+                aggiornaStati();
+
+             };
+
+            baseline_method.onchange = function() {
+
+                 // evidenzio il threshold per i metodi non binari
+                if (baseline_method.value == '3'){
+                    threshold.disabled=false;
+                    threshold3.style.display = "";
+                    threshold5.style.display = "none";
+                    threshold6.style.display = "none";
+
+                } else if( baseline_method.value == '5'){
+                    threshold.disabled=false;
+                    threshold3.style.display = "none";
+                    threshold5.style.display = "";
+                    threshold6.style.display = "none";
+
+                } else if(baseline_method.value == '6'){
+                    threshold.disabled=false;
+                    threshold3.style.display = "none";
+                    threshold5.style.display = "none";
+                    threshold6.style.display = "";
+                }
+                else{
+                    threshold.disabled=true;
+                    threshold3.style.display = "none";
+                    threshold5.style.display = "none";
+                    threshold6.style.display = "none";
+
+                }
+
+
+                 // se scelgo il metodo burst devo mostrare i parametri addizionali
+                 if (baseline_method.value == '6'){
+                    $('#default').parent().show();
+
+                     // se ho già lanciato una volta il metodo di burst, setto gli ultimi parametri usati
+                     //set_burst_params();
+
+                 }
+                 else{
+                     $('#default').parent().hide();
+                     hide_burst_params();
+                     document.getElementById('submit').value = "Launch Method";
+                 }
+             };
+
+            default_check.onchange = function(){
+
+                 if(default_check.checked == false )
+                    show_burst_params();
+
+                 else
+                    hide_burst_params();
+
+
+             };
+
+
+        function open_description() {
+            window.open("{{ url_for('methods_description') }}");
+        }
+
+
+        </script>
+
 {% endblock %}

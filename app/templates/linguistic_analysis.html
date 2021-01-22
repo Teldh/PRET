@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container" style="background-color: rgb(255,255,255,0.9);margin-top:3rem;border-radius:4px;max-width: 1135px;margin-bottom:3rem;padding:15px">
-<script src="https://d3js.org/d3.v4.js"></script>
-<script src="../static/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3.v3.js"     ></script>
+<script src="../static/jsnetworkx.js"  ></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
 <h1>Linguistic Analysis:</h1>
@@ -26,21 +27,22 @@
 <input id="prerequisite_node" type="text" name="prerequisite_node"/>
 <input id="advanced_node" type="text" name="advanced_node"/>
 -->
-<label for="prerequisite_name">Prerequisite:</label>
+<label for="prerequisite_name" style="background-color: #ff6666;">Prerequisite:</label>
 <select class="form-control" id="prerequisite_name" name="prerequisite_name"></select>
 <br />
-<label for="advanced_name">Advanced:</label>
+<label for="advanced_name" style="background-color: lightblue;">Target:</label>
 <select class="form-control" id="advanced_name" name="advanced_name"></select>
 <br />
-<label for="edge_weight">Weight of the relation:</label>
+<label for="edge_weight" id="edge_weight_label">Weight of the relation:</label>
 <select class="form-control" id="edge_weight" name="edge_weight"></select>
 <br />
 <label for="sent_id">Sentence of the relation:</label>
 <select class="form-control" id="sent_id" name="sent_id"></select>
 <br />
-<input type="submit" name="find" id="find" class="btn btn-success" value="Find" />
+<input type="submit" name="find" id="find" class="btn btn-primary" value="Find" />
 
 <br />
+
 <br />
 
 <div id="results">
@@ -71,29 +73,30 @@
 
         <ul class="nav nav-tabs" id="tabContent" style="margin:auto">
            
-            <li class="active"><a href="#context_tab" data-toggle="tab">Context</a> <br></li>
+            <li class="active" style="margin:7px"> <a href="#context_tab" data-toggle="tab">Context</a> <br></li>
             
-            <li><a href="#pos" data-toggle="tab">POS</a> <br></li>
+            <li style="margin:7px"> <a href="#pos" data-toggle="tab">POS</a> <br></li>
+
+            <li style="margin:7px"> <a href="#grafo" data-toggle="tab">Graph</a> <br></li>
             
-            <li><a href="#syntax" data-toggle="tab">Syntax</a> <br></li>
+            <!--<li style="margin:7px"> <a href="#syntax" data-toggle="tab">Syntax</a> <br></li>-->
             
         </ul>
 
-        <div class="tab-content">
+        <div class="tab-content" style="width:600px">
             <div class="tab-pane active" id="context_tab">
 
                 <div class="modal-body">
-                    <svg id="svg_modal" width="320" height="100">
-                        <g id="minigraph_modal" transform="translate(100,50)"></g>
-                    </svg>
-                    <p>The selected relation has been annotated in the following context:</p>
+                    <div id="relation"></div>
+                    <p>The relation has been annotated in the following context:</p>
                     <div id="paper_modal"></div>
                     <br />
-                    <br />
+
                     <div id="buttons_wrapper">
-                        <a href="#" id="prev_button" class="previous round">&#8249;</a>
-                        <a href="#" id="next_button" class="next round">&#8250;</a>
+                        <a href="#" id="prev_button" style="float:left;" class="previous round">Previous sentence</a>
+                        <a href="#" id="next_button" style="float:right;" class="next round">Next sentence</a>
                     </div>
+                    <br />
                 </div>
             </div>
 
@@ -107,11 +110,17 @@
                 </div>
             </div>
 
-            <div class="tab-pane" id="syntax">
+            <div class="tab-pane" id="grafo">
+                <div class="modal-body" id="canvas" style="width:600px; height:400px;">
+
+                </div>
+            </div>
+
+            <!--<div class="tab-pane" id="syntax">
                 <div class="modal-body">
                     <p>Syntax of the sentence:</p>
                 </div>
-            </div>
+            </div>-->
         </div>
 
         <div class="modal-footer">
@@ -125,13 +134,13 @@
     <script src="http://d3js.org/d3.v5.min.js"></script>
     -->
 <script type="text/javascript">
-             var $json = {{ file.json|tojson }}
-             var $conll = {{ file.conll|tojson }}
-             var $tagged = {{ file.tagged|tojson }}
-             var $autoConcepts = {{ file.concepts|tojson }}
-             var $conceptToTok = {{ file.concept_to_tok|tojson }}
-             var $tokToConcept = {{ file.tok_to_concept|tojson }}
-             var $sentList = {{ file.sentence|tojson }}
+             var $json = {{ file.json|tojson }};
+             var $conll = {{ file.conll|tojson }};
+             var $tagged = {{ file.tagged|tojson }};
+             var $autoConcepts = {{ file.concepts|tojson }};
+             var $conceptToTok = {{ file.concept_to_tok|tojson }};
+             var $tokToConcept = {{ file.tok_to_concept|tojson }};
+             var $sentList = {{ file.sentence|tojson }};
              
              
 </script>

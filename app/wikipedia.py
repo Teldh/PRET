@@ -9,7 +9,8 @@ import re, math
 from collections import Counter
 from app import app, db
 from app.models import Terminology, Terminology_reference
-
+from time import sleep
+import requests
 
 WORD = re.compile(r'\w+')
 
@@ -78,7 +79,7 @@ def text_to_vector(text):
      words = WORD.findall(text)
      return Counter(words)
 
-def page_finder(concept, rawContentDict):
+def page_finder(concept, rawContentDict, bid, cap):
     
     flag = False
     best = 0
@@ -113,14 +114,33 @@ def page_finder(concept, rawContentDict):
         flag = True
     
     if(not flag):
-        db.session.add(term)
+        print(term.wiki_url)
+        if Terminology.query.filter_by(lemma=term.lemma, wiki_url = term.wiki_url).first() is None:
+            db.session.add(term)
+            db.session.flush()
 
-def initialize_page(text, words):
-    
+            if not(Terminology_reference.query.filter_by(tid=term.tid, cap=cap, bid=bid).first()):
+                term_ref = Terminology_reference(tid=term.tid, cap=cap, bid=bid)
+                db.session.add(term_ref)
+        else:
+            tid = Terminology.query.filter_by(lemma=term.lemma, wiki_url = term.wiki_url).first().tid
+            if not (Terminology_reference.query.filter_by(tid=tid, cap=cap, bid=bid).first()):
+                term_ref = Terminology_reference(tid=tid, cap=cap, bid=bid)
+                db.session.add(term_ref)
+
+
+def initialize_page(text, words, bid, cap):
+
     rawContentDict = {"text1": text}
     for concept in words:
-        if not Terminology.query.filter_by(lemma = concept.lower()).first():
-            page_finder(concept, rawContentDict)
+        try:
+            #if not Terminology.query.filter_by(lemma = concept.lower()).first(): #disambiguazione va fatta sempre
+            page_finder(concept, rawContentDict, bid, cap)
+
+        except requests.exceptions.RequestException as e:
+            #troppe richieste insieme a wikipedia, mi fermo e riprovo
+            sleep(5)
+            continue
     db.session.commit()
         
 

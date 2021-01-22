@@ -46,17 +46,32 @@ def create_graphs(filename, dataset, annotator):
     G_nx = nx.DiGraph()
     G_ig = igraph.Graph(directed=True)
     annotator = annotator
-
     G_nx.add_nodes_from(dataset['name'].tolist())
     G_ig.add_vertices(dataset['name'].tolist())
-    
     for index, row in filename.iterrows():
         prereq = row[0]
         subsid = row[1]
+
+
+
         G_nx.add_edge(prereq, subsid)
+        try:
+            weight = row[2]
+        except:
+            weight = None
+
+        if weight:
+            if annotator=="3" or annotator=="5" or annotator=="6":
+                G_nx[prereq][subsid]['threshold'] = weight
+            else:
+                if type(annotator) is not list and annotator.startswith("uid"):
+                    G_nx[prereq][subsid]['weight'] = weight
+                else:
+                    if type(annotator) is str and annotator.startswith("gold"):
+                        G_nx[prereq][subsid]['weight'] = weight
+
         G_ig.add_edge(dataset['name'].tolist().index(prereq),
                       dataset['name'].tolist().index(subsid))
-            
     return G_nx, G_ig, annotator
 	
 	
@@ -127,6 +142,7 @@ def detect_loops(networkx_graph, igraph_graph, dataset, remove=False):
             target = igraph_graph.vs[igraph_graph.es[edge[0]].target]['name']
             detected_cycles['mutuals'].append((source, target))
             detected_cycles['mutuals'].append((target, source))
+            detected_cycles['loops'].append((source, target))
             
             if remove:
                 # keep only the relation that has as prerequisite the term appearing first in the text
@@ -195,7 +211,6 @@ def detect_transitive_edges(graph, cutoff, find_also_not_inserted=False):
                         if find_also_not_inserted:
                             if (source_node, target_node) not in transitives['automatically detected']:
                                 transitives['automatically detected'].append((source_node, target_node))
-                    
     return transitives
 	
 	
@@ -239,12 +254,16 @@ def create_graph_dict(dataset, gold_matrix, annotator, metrics, detected_cycles,
     '''
     Collects all the info about the graph in a python dict
     (to be then passed to save_to_json in order to obtain the final json)
-    
+
     info to encode:
     nodes: id, name, sections, freq (from section we can derive first occurrance)
     links: source, target, cluster, annotators (from annotators we can derive agreement)
     '''
 
+    if type(annotator) is str and annotator.startswith("uid"):
+        ref = annotator.strip('][').split(', ')
+        annotator = ref
+    '''UP: Controllo per il bezier graph che passava una stringa anzichè una lista'''
     graph_dict = {"annotator": annotator,
                   "directed": True,
                   "nodes": [],
@@ -256,52 +275,79 @@ def create_graph_dict(dataset, gold_matrix, annotator, metrics, detected_cycles,
                   "max in degree": metrics['max in degree'],
                   "detected cycles": detected_cycles,
                   "disconnected nodes": metrics['disconnected']}
-
-
+    indexes = gold_matrix.index
     for concept in dataset["name"]:
-        ID = dataset[dataset['name']==concept].index.tolist()[0]
-        
-        try:
-            sections_list = ast.literal_eval(dataset.loc[ID]["sections"])
-            # convert the section_list to string to make it serializable with json
-            sections_list = list(map(str, sections_list))
-        except:
-            sections_list = (dataset.loc[ID]["sections"])
-            temp = []
-            for item in sections_list:
-                temp.append(str(item))
-            sections_list = temp
-        
-        
-        
-        # add info to "nodes"
-        graph_dict["nodes"].append({"id": ID,
-                                    "name": concept,
-                                    "sections": sections_list,
-                                    "frequence": int(dataset.loc[ID]["frequence"]),
-                                    "cluster": membership[ID]})
+        if concept in indexes:
+            ID = dataset[dataset['name']==concept].index.tolist()[0]
 
-        for other_concept in dataset["name"]:
-            
-            ID_source = gold_matrix.index.tolist().index(concept)
-            ID_target = gold_matrix.index.tolist().index(other_concept)
-            if G_nx.has_edge(concept, other_concept):
-            
-                annotators_list = []
-                if not pd.isna(gold_matrix.loc[concept][other_concept]):
-                    try:
-                        annotators_list = ast.literal_eval(gold_matrix.loc[concept][other_concept])
-                    except:
-                        annotators_list = (gold_matrix.loc[concept][other_concept])
-                
-                    
-                
-                # add info to "links"
-                graph_dict["links"].append({"source": ID_source,
-                                            "target": ID_target,
-                                            "annotators": annotators_list})
-#                                            "is_transitive": (concept, other_concept) in transitives['manually inserted'],
-#                                            "has_mutual": (concept, other_concept) in detected_cycles['mutuals']})
+            try:
+                sections_list = ast.literal_eval(dataset.loc[ID]["sections"])
+                sentence_list = ast.literal_eval(dataset.loc[ID]["sentence"])
+                # convert the section_list to string to make it serializable with json
+                sentence_list = list(map(str, sentence_list))
+                sections_list = list(map(int, sections_list))
+            except:
+                sections_list = (dataset.loc[ID]["sections"])
+                sentence_list = (dataset.loc[ID]["sentence"])
+                temp = []
+                temp2 = []
+                for item1 in sentence_list:
+                    temp2.append(int(item1))
+                sentence_list = temp2
+                for item in sections_list:
+                    temp.append(str(item))
+                sections_list = temp
+
+
+            # add info to "nodes"
+            graph_dict["nodes"].append({"id": ID,
+                                        "name": concept,
+                                        "sections": sections_list,
+                                        "sentence": sentence_list,
+                                        "frequence": int(dataset.loc[ID]["frequence"]),
+                                        "cluster": membership[ID]})
+
+            for other_concept in dataset["name"]:
+                if other_concept in indexes:
+                    ID_source = gold_matrix.index.tolist().index(concept)
+                    ID_target = gold_matrix.index.tolist().index(other_concept)
+                    if G_nx.has_edge(concept, other_concept):
+                        annotators_list = []
+                        if not pd.isna(gold_matrix.loc[concept][other_concept]):
+                            try:
+                                annotators_list = ast.literal_eval(gold_matrix.loc[concept][other_concept])
+                            except:
+                                annotators_list = (gold_matrix.loc[concept][other_concept])
+
+                        if type(annotator) is not list and annotator.startswith("uid"):
+                        # add info to "links"
+
+                            graph_dict["links"].append({"source": ID_source,
+                                                    "target": ID_target,
+                                                    "annotators": annotators_list,
+                                                    "weight": G_nx[concept][other_concept]['weight']})
+                        else:
+                            if type(annotator) is list:
+
+                                x = annotators_list.split()
+                                graph_dict["links"].append({"source": ID_source,
+                                                            "target": ID_target,
+                                                            "annotators": x,
+                                                            "weight": G_nx[concept][other_concept]['weight']})
+
+                            else:
+                                if annotator == "3" or annotator == "5" or annotator == "6":
+                                    graph_dict["links"].append({"source": ID_source,
+                                                    "target": ID_target,
+                                                    "annotators": annotators_list,
+                                                    "threshold":G_nx[concept][other_concept]['threshold']})
+                                else:
+
+                                    graph_dict["links"].append({"source": ID_source,
+                                                            "target": ID_target,
+                                                            "annotators": annotators_list,})
+        #                                            "is_transitive": (concept, other_concept) in transitives['manually inserted'],
+        #                                            "has_mutual": (concept, other_concept) in detected_cycles['mutuals']})
 #                try:
  #                   graph_dict["links"].append({
   #                  "is_transitive": (concept, other_concept) in transitives['manually inserted'],
@@ -334,3 +380,18 @@ def export_to_json(filename, graph_dict):
 #membership = detect_clusters(G_ig)
 #graph_dict = create_graph_dict(dataset, gold_with_annotators, annotator, metrics, detected_cycles, trans_dict, membership)
 #output_json = export_to_json("output_files//prova.json", graph_dict)
+
+
+
+
+def get_roots(graph):
+    roots = []
+
+    for node in graph:
+        if len(list(graph.predecessors(node)))==0: #è root
+            roots.append(node)
+
+    return roots
+
+def longest_path(graph):
+    return nx.dag_longest_path(graph)

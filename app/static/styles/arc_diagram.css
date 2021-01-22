@@ -76,7 +76,7 @@ div.container {
 
 #relationsTable tr.header, #relationsTable tr:hover {
     /* Add a grey background color to the table header and on hover */
-    background-color: #377CF1;
+    /*background-color: #377CF1;*/
 }
 
 th {
@@ -86,4 +86,11 @@ th {
 
 .selected {
     fill: #fcff0d;
+}
+button {
+    padding: 10px 20px;
+    position:relative;
+    top:10px;
+    left:0px;
+
 }

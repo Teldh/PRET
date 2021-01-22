@@ -4,9 +4,22 @@ html,body,#wrapper {
     margin: 0px;
 }
 
+div.container {
+    width: 100%;
+    height: 100%;
+    font: 10px sans-serif;
+    background-color: rgb(255,255,255,0.9);
+    padding: 1px;
+    margin: 3rem;
+    border-radius: 4px;
+}
+
 .chart {
     font-family: Arial, sans-serif;
     font-size: 12px;
+    background-color: white;
+    width: auto;
+    height: auto;
 }
 
 .axis path,.axis line {

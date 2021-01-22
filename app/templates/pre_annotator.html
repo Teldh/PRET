@@ -2,17 +2,84 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
 <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
-        <div class="container">
-          <div class="row">
-            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
-              <div class="card card-signin my-5" style="background-color:rgb(255,255,255,0.9)">
-                <div class="card-body">
-                    <h5 class="card-title text-center">Select a text to annotate</h5>
-                      <div class="form-group">
-                        {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
-                  </div>
+        <div class="container" style=" margin-top:2rem;padding:15px">
+
+                <div class="row" >
+                    <div class="col" >
+                          <div class="row" style="background-color:rgb(255,255,255,0.9);border-radius:4px">
+                                <div class="card-body">
+                                    <h3> Create new annotation </h3>
+                                    <br>
+                                    <h5>Select a text to start annotate</h5>
+                                      <div class="form-group">
+                                        {{ wtf.quick_form(form, button_map={'submit': 'primary'}) }}
+                                      </div>
+                                  </div>
+                          </div>
+                    </div>
+                    <div class="col" style="padding:0; background-color:rgb(255,255,255,0.9);  margin-left:20px;border-radius:4px;max-height:450px;">
+                        <div class="card-body">
+                        <h4>Your annotations</h4>
+                            <br>
+                                <div style="height:250px;overflow-y: auto;">
+                                <table class="table table-bordered" id="table">
+                                <thead>
+                                    <tr>
+                                    <th>Title</th>
+                                    <th>Chapter</th>
+                                    </tr>
+                                </thead>
+                                {% for ann in file['annotations_user'] %}
+                                <tr>
+                                    <td> {{ ann.title }}</td>
+                                    <td> {{ ann.cap}}</td>
+
+                                    <td> <a href="/download_ann/{{ ann.bid }},{{ ann.cap }},{{ ann.uid }}" >
+                                                <button class="btn btn-primary" style="font-size : 15px; ">⭳</button>
+                                            </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+
+                              </table>
+                                </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col" style="padding:0;background-color:rgb(255,255,255,0.9); margin-left:20px;border-radius:4px;max-height:450px;">
+                        <div class="card-body">
+                        <h4>Other users</h4>
+                            <br>
+                            <div style="height:250px;overflow-y: auto;">
+                                <table class="table table-bordered" id="table">
+                                <thead >
+                                    <tr>
+                                    <th>Title</th>
+                                    <th >Chapter</th>
+                                    <th>Annotator</th>
+                                    </tr>
+                                </thead>
+                                {% for ann in file['annotations_others'] %}
+                                <tr>
+                                    <td> {{ ann.title }}</td>
+                                    <td> {{ ann.cap}}</td>
+                                    <td> {{ ann.name }} {{ ann.surname }}</td>
+                                    <td> <a href="/download_ann/{{ ann.bid }},{{ ann.cap }},{{ ann.uid }}" >
+                                                <button class="btn btn-primary" style="font-size : 15px; ">⭳</button>
+                                            </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+                              </table>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-          </div>
+
         </div>
 {% endblock %}

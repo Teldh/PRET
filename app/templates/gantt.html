@@ -1,98 +1,183 @@
 {% extends "base.html" %}
 {% block content %}
-        <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat"></body>
-    <title>Gantt Chart of Bursts</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-
-    <script src="../static/jquery.min.js"></script>
-
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="http://d3js.org/d3.v4.min.js"></script>
-
+    <body style="background-image: url('../static/images/wallpaper.jpeg');background-attachment:fixed;background-repeat:no-repeat">
     <script src="../static/d3.v4.min.js"></script>
-
     <link type="text/css" href="../static/styles/gantt.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        <!--<title>Gantt Chart of Bursts</title>
 
-<body>
+
+        <script src="../static/jquery.min.js"></script>
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+        <script type="text/javascript" src="http://d3js.org/d3.v4.min.js"></script>
+
+        -->
+
+        <!-- TODO SE2020: vedere se in PRET si può aggiungere questa funzioanlità per
+        rendere il grafico più esplorabile: vengono mostrati tanti bottoni quante sono
+        le sezioni del testo (+ un bottone per il testo totale), si clicca su un bottone
+        e la visualizzazione si riposiziona e/o zooma solamente il sotto-gantt che copre
+        le frasi comprese in quella sezione
+        (vedere nel JSscript la funzione $(".time-btn").click)
+        -->
+     <div class="container" id="container" style="overflow-x: auto; height:auto;">
+            <header class="page-header">
+                <h1>Gantt</h1>
+            </header>
+
+         <div style="float:right;">
+        <a href="/download_gantt/{{ bid }},{{ cap }}" >
+            <button class="btn btn-primary">Download </button>
+        </a>
+    </div>
+         <!--
+        <div id="buttons_div">
+            <button class="btn time-btn" id="section0" type="button">full text</button>
+            <button class="btn time-btn" id="section1" type="button">section 1</button>
+            <button class="btn time-btn" id="section2" type="button">section 2</button>
+            <button class="btn time-btn" id="section3" type="button">section 3</button>
+            <button class="btn time-btn" id="section4" type="button">section 4</button>
+            <button class="btn time-btn" id="section5" type="button">section 5</button>
+        </div>-->
 
 
-<!-- Modal box for showing prerequisite relations -->
-<div class="modal fade" id="modalShowRelations" role="dialog">
-    <div class="modal-dialog">
+        <!-- Modal box for showing prerequisite relations -->
+        <div class="modal fade" id="modalShowRelations" role="dialog">
+            <div class="modal-dialog modal-lg">
 
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title" id="conceptSummary_name"></h4>
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title" id="conceptSummary_name"></h4>
+                    </div>
+
+                    <!--<ul class="nav nav-tabs" id="tabContent">
+                        <li class="active" style="margin:7px" ><a href="#burst-relations" data-toggle="tab">Burst relations</a><br></li>
+                        <li style="margin:7px"><a href="#gold-relations" data-toggle="tab">Relations</a></li>
+                    </ul>-->
+
+
+
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="burst-relations">
+
+                            <div class="modal-body">
+                                <p>The selected concept has the following burst relations:</p>
+                                <table class="table table-bordered" id="table_burstSummary">
+                                    <tr>
+                                        <th>x</th><th>y</th><th>Bx_id</th><th>By_id</th><th>Bx_start</th><th>Bx_end</th><th>By_start</th><th>By_end</th><th>Rel</th>
+                                    </tr>
+                                </table>
+                            </div>
+
+                        </div>
+
+                        <!--<div class="tab-pane" id="gold-relations">
+                            <div class="modal-body">
+                                <p>Annotators added the following relations:</p>
+                                <table class="table table-bordered" id="table_goldSummary">
+                                    <tr>
+                                        <th>PREREQUISITE</th><th>ADVANCED</th><th>ANNOTATORS</th>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>-->
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default btn-success" data-dismiss="modal">Ok</button>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <ul class="nav nav-tabs" id="tabContent">
-                <li class="active"><a href="#burst-relations" data-toggle="tab">Burst relations</a></li>
-                <li><a href="#gold-relations" data-toggle="tab">Gold relations</a></li>
-            </ul>
-
-
-
-            <div class="tab-content">
-                <div class="tab-pane active" id="burst-relations">
-
+        <!-- Modal box for showing bursts -->
+        <div class="modal fade" id="modalShowBursts" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title" id="conceptsPair"></h4>
+                    </div>
                     <div class="modal-body">
-                        <p>The selected concept has the following burst relations:</p>
-                        <table class="table table-bordered" id="table_burstSummary">
+                        <p>The two concepts have the following bursts relations:</p>
+                        <table class="table table-bordered" id="table_conceptPair">
                             <tr>
-                                <th>x</th><th>y</th><th>Bx_id</th><th>By_id</th><th>Bx_start</th><th>Bx_end</th><th>By_start</th><th>By_end</th><th>Rel</th>
+                                <th>CONCEPT A</th><th>CONCEPT B</th><th>START A</th><th>END A</th><th>START B</th><th>END B</th><th>ALLEN'S RELATION</th>
                             </tr>
                         </table>
                     </div>
 
-                </div>
-
-                <div class="tab-pane" id="gold-relations">
-                    <div class="modal-body">
-                        <p>Annotators added the following relations:</p>
-                        <table class="table table-bordered" id="table_goldSummary">
-                            <tr>
-                                <th>PREREQUISITE</th><th>ADVANCED</th><th>ANNOTATORS</th>
-                            </tr>
-                        </table>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default btn-success" data-dismiss="modal">Ok</button>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default btn-success" data-dismiss="modal">Ok</button>
+
+
+        <!-- Modal box for showing text -->
+        <div class="modal fade" id="modalShowContext" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title" id="context"></h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>The clicked burst covers the following portion of text:</p>
+                        <table class="table table-bordered" id="table_sentences">
+                            <tr>
+                                <th>Sentence number</th><th>Text</th>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default btn-success" data-dismiss="modal">Ok</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Modal box for showing bursts -->
-<div class="modal fade" id="modalShowBursts" role="dialog">
-    <div class="modal-dialog">
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title" id="conceptsPair"></h4>
-            </div>
-            <div class="modal-body">
-                <p>The two concepts have the following bursts relations:</p>
-                <table class="table table-bordered" id="table_conceptPair">
-                    <tr>
-                        <th>CONCEPT A</th><th>CONCEPT B</th><th>START A</th><th>END A</th><th>START B</th><th>END B</th><th>ALLEN'S RELATION</th>
-                    </tr>
-                </table>
-            </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default btn-success" data-dismiss="modal">Ok</button>
-            </div>
-        </div>
-    </div>
-</div>
+        <!--<script type="text/javascript" src="../datasets/burst_resultsAIED2019_workshop.js"></script>
+        <script type="text/javascript" src="../datasets/database_cap4.js"></script>-->
+        <script>
+            var bursts = {{ bursts|tojson }};
+            var burstsPairs = {{ burstsPair|tojson }};
+            var concepts = {{ words|tojson }};
 
-<script type="text/javascript" src="../static/gantt.js"></script>
-<script type="text/javascript" src="../static/burst_resultsAIED2019_ultimo2.js"></script>
+            var $json = {{ file|tojson }}
+            $json = JSON.parse($json);
 
+            var idToNode = {};
+            $json.nodes.forEach(function (n) {
+                idToNode[n.id] = n;
+            });
+
+            var edgeList = [];
+
+            $json.links.forEach(function (e) {
+                e.source = idToNode[e.source].name;
+                e.target = idToNode[e.target].name;
+                e.force = e.annotators.length;
+                edgeList.push([e.source, e.target, e.force]);
+            });
+
+
+            var $sentList = {{ sentList|tojson }}
+
+
+
+        </script>
+        <script type="text/javascript" src="../static/gantt.js"></script>
+     </div>
+    </body>
 {% endblock %}

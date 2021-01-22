@@ -1,0 +1,30 @@
+.clickable-row:hover {
+    background-color: lightblue;
+}
+
+.highlight {
+    background-color: #fff043;
+    font-size: 30px;
+}
+
+select, option {
+    width: 130px;
+}
+
+option {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.Confirm{
+    background-color: lightgreen;
+}
+
+.Delete{
+    background-color: #FF5733;
+}
+
+.Change{
+    background-color: #FAFF5A;
+}
